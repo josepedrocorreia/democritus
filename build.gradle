@@ -3,7 +3,6 @@ plugins {
     id 'findbugs'
     id 'pmd'
     id 'jacoco'
-    id 'com.github.kt3k.coveralls' version '2.4.0x'
     id 'project-report'
     id 'idea'
 }
@@ -20,7 +19,7 @@ dependencies {
 
 jacocoTestReport {
     reports {
-        xml.enabled = true // coveralls plugin depends on xml format report
+        xml.enabled = true
         html.enabled = true
     }
 }
