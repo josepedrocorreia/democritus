@@ -1,5 +1,7 @@
 package org.carangorango.sgl.core;
 
-public abstract class MetricSpace<S> implements Metric<S> {
+import java.util.AbstractSet;
+
+public abstract class MetricSpace<S> extends AbstractSet<S> implements Metric<S> {
 
 }
