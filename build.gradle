@@ -7,6 +7,8 @@ plugins {
     id 'idea'
 }
 
+version = '0.0.1'
+
 repositories {
     mavenCentral()
 }
@@ -17,9 +19,22 @@ dependencies {
     testCompile 'junit:junit:4.+'
 }
 
+jar {
+    manifest {
+        attributes('Implementation-Title': 'SGL',
+                'Implementation-Version': version)
+    }
+}
+
 jacocoTestReport {
     reports {
         xml.enabled = true
+    }
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
         html.enabled = true
     }
 }
