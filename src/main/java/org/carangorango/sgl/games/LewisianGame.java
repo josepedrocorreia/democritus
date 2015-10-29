@@ -10,11 +10,28 @@ import java.util.Set;
 
 public class LewisianGame<S, M, A> extends SignalingGame<S, M, A> implements CheapTalk<S, A> {
 
+    private Set<S> states;
+    private Set<M> messages;
+    private Set<A> actions;
     private PayoffTable<S, A> payoffTable;
 
     public LewisianGame(Set<S> states, Set<M> messages, Set<A> actions, PayoffTable<S, A> payoffTable) {
-        super(states, messages, actions);
+        this.states = states;
+        this.messages = messages;
+        this.actions = actions;
         this.payoffTable = payoffTable;
+    }
+
+    public Set<S> getStates() {
+        return this.states;
+    }
+
+    public Set<M> getMessages() {
+        return this.messages;
+    }
+
+    public Set<A> getActions() {
+        return this.actions;
     }
 
     @Override
