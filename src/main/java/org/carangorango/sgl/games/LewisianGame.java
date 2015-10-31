@@ -1,14 +1,12 @@
 package org.carangorango.sgl.games;
 
-import org.carangorango.sgl.core.CheapTalk;
+import org.carangorango.sgl.core.CheapTalkSignalingGame;
 import org.carangorango.sgl.core.Payoff;
 import org.carangorango.sgl.core.PayoffTable;
-import org.carangorango.sgl.core.SignalingGame;
 
-import java.util.Optional;
 import java.util.Set;
 
-public class LewisianGame<S, M, A> extends SignalingGame<S, M, A> implements CheapTalk<S, A> {
+public class LewisianGame<S, M, A> extends CheapTalkSignalingGame<S, M, A> {
 
     private Set<S> states;
     private Set<M> messages;
@@ -35,12 +33,8 @@ public class LewisianGame<S, M, A> extends SignalingGame<S, M, A> implements Che
     }
 
     @Override
-    protected Payoff utility(S state, Optional<M> message, A action) {
+    public Payoff utility(S state, A action) {
         return this.payoffTable.get(state, action);
     }
 
-    @Override
-    public Payoff utility(S state, A action) {
-        return this.utility(state, Optional.<M>empty(), action);
-    }
 }
