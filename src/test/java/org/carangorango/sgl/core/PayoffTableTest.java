@@ -23,25 +23,75 @@ public class PayoffTableTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionOnNullPayoffTable() {
+    public void constructorShouldThrowExceptionOnNullPayoffTable() {
         new PayoffTable<Integer, Integer>(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionOnEmptyPayoffTable() {
+    public void constructorShouldThrowExceptionOnEmptyPayoffTable() {
         new PayoffTable<>(ImmutableTable.<Integer, Integer, Payoff>builder().build());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionOnPayoffTableWithoutRows() {
+    public void constructorShouldThrowExceptionOnPayoffTableWithoutRows() {
         new PayoffTable<Integer, Integer>(
                 ArrayTable.create(ImmutableSet.of(), ImmutableSet.of(1)));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionOnPayoffTableWithoutColumns() {
+    public void constructorShouldThrowExceptionOnPayoffTableWithoutColumns() {
         new PayoffTable<Integer, Integer>(
                 ArrayTable.create(ImmutableSet.of(1), ImmutableSet.of()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnNullRows() {
+        PayoffTable.<Integer, Integer>createTable(null, ImmutableSet.of(1), new double[][]{{1}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnNullColumns() {
+        PayoffTable.<Integer, Integer>createTable(ImmutableSet.of(1), null, new double[][]{{1}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnNullSenderPayoffs() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), null, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnNullReceiverPayoffs() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), new double[][]{{1}}, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnEmptyRows() {
+        PayoffTable.<Integer, Integer>createTable(ImmutableSet.of(), ImmutableSet.of(1), new double[][]{{1}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnEmptyColumns() {
+        PayoffTable.<Integer, Integer>createTable(ImmutableSet.of(1), ImmutableSet.of(), new double[][]{{1}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnSenderPayoffsRowCountMismatch() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), new double[][]{{1}, {1}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnReceiverPayoffsRowCountMismatch() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), new double[][]{{1}}, new double[][]{{1}, {1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnSenderPayoffsColumnCountMismatch() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), new double[][]{{1, 2}}, new double[][]{{1}});
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldThrowExceptionOnReceiverPayoffsColumnCountMismatch() {
+        PayoffTable.createTable(ImmutableSet.of(1), ImmutableSet.of(1), new double[][]{{1}}, new double[][]{{1, 2}});
     }
 
     @Test(expected = IllegalArgumentException.class)
