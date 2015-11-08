@@ -6,7 +6,7 @@ import org.carangorango.sgl.core.PayoffTable;
 
 import java.util.Set;
 
-public class LewisianGame<S, M, A> extends CheapTalkSignalingGame<S, M, A> {
+public class LewisianGame<S, M, A> implements CheapTalkSignalingGame<S, M, A> {
 
     private Set<S> states;
     private Set<M> messages;

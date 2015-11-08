@@ -3,14 +3,14 @@ package org.carangorango.sgl.core;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class SignalingGame<S, M, A> {
+public interface SignalingGame<S, M, A> {
 
-    public abstract Set<S> getStates();
+    Set<S> getStates();
 
-    public abstract Set<M> getMessages();
+    Set<M> getMessages();
 
-    public abstract Set<A> getActions();
+    Set<A> getActions();
 
-    protected abstract Payoff utility(S state, Optional<M> message, A action);
+    Payoff utility(S state, Optional<M> message, A action);
 
 }

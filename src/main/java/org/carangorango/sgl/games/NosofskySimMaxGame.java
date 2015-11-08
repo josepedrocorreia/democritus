@@ -6,7 +6,7 @@ import org.carangorango.sgl.core.Payoff;
 
 import java.util.Set;
 
-public class NosofskySimMaxGame<S, M> extends CheapTalkSignalingGame<S, M, S> {
+public class NosofskySimMaxGame<S, M> implements CheapTalkSignalingGame<S, M, S> {
 
     private MetricSpace<S> states;
     private Set<M> messages;
