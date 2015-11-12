@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class BehavioralStrategy<I, C> implements SignalingStrategy<I, C> {
 
     private Map<I, EnumeratedDistribution<C>> behavior;
 
-    public BehavioralStrategy(Map<I, EnumeratedDistribution<C>> behavior) {
+    protected BehavioralStrategy(Map<I, EnumeratedDistribution<C>> behavior) {
         this.behavior = behavior;
     }
 
@@ -31,8 +32,9 @@ public final class BehavioralStrategy<I, C> implements SignalingStrategy<I, C> {
     }
 
     // TODO: Simplify please, too freaking complex...
-    public static <I, C> BehavioralStrategy<I, C> createBehavioralStrategy(Table<I, C, Double> probabilities) {
-        checkArgument(probabilities != null, "Argument should not be null");
+    public static <I, C> BehavioralStrategy<I, C> createBehavioralStrategy(Table<I, C, Double> probabilities)
+            throws NullPointerException, IllegalArgumentException {
+        checkNotNull(probabilities != null, "Argument should not be null");
         checkArgument(probabilities.size() != 0, "Probability map should not be empty");
         checkArgument(!probabilities.rowKeySet().stream()
                         .map(i -> probabilities.row(i).keySet())

@@ -24,7 +24,7 @@ public class BehavioralStrategyTest {
                         .build());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void factoryMethodShouldThrowExceptionOnNullArgument() throws Exception {
         BehavioralStrategy.createBehavioralStrategy(null);
     }

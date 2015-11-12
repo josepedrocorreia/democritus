@@ -12,7 +12,7 @@ public class PureStrategyTest {
 
     @Before
     public void createExample() throws Exception {
-        this.strategy = new PureStrategy<>(ImmutableMap.<Integer, Integer>builder()
+        this.strategy = PureStrategy.create(ImmutableMap.<Integer, Integer>builder()
                 .put(1, 1)
                 .put(2, 2)
                 .put(3, 2)
@@ -27,13 +27,13 @@ public class PureStrategyTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void shouldNotAllowNullArgumentToConstructor() {
-        new PureStrategy<>(null);
+    public void factoryMethodShouldNotAllowNullArgument() {
+        PureStrategy.create(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldNotAllowEmptyMapArgumentToConstructor() {
-        new PureStrategy<>(ImmutableMap.of());
+    public void factoryMethodShouldNotAllowEmptyMapArgument() {
+        PureStrategy.create(ImmutableMap.of());
     }
 
     @Test(expected = NullPointerException.class)

@@ -9,9 +9,7 @@ public final class PureStrategy<I, C> implements SignalingStrategy<I, C> {
 
     private Map<I, C> choiceFunction;
 
-    public PureStrategy(Map<I, C> choiceFunction) {
-        checkNotNull(choiceFunction);
-        checkArgument(choiceFunction.size() > 0, "Choice function should have at least one mapping");
+    protected PureStrategy(Map<I, C> choiceFunction) {
         this.choiceFunction = choiceFunction;
     }
 
@@ -20,6 +18,13 @@ public final class PureStrategy<I, C> implements SignalingStrategy<I, C> {
         checkNotNull(information);
         checkArgument(this.choiceFunction.containsKey(information));
         return choiceFunction.get(information);
+    }
+
+    public static <I, C> PureStrategy<I, C> create(Map<I, C> choiceFunction)
+            throws NullPointerException, IllegalArgumentException {
+        checkNotNull(choiceFunction);
+        checkArgument(choiceFunction.size() > 0, "Choice function should have at least one mapping");
+        return new PureStrategy<>(choiceFunction);
     }
 
 }
