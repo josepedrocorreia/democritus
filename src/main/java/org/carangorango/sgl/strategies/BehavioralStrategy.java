@@ -1,9 +1,10 @@
-package org.carangorango.sgl.core;
+package org.carangorango.sgl.strategies;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
 import org.apache.commons.math3.util.Pair;
+import org.carangorango.sgl.core.SignalingStrategy;
 
 import java.util.HashMap;
 import java.util.List;

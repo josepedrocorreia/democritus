@@ -1,4 +1,4 @@
-package org.carangorango.sgl.core;
+package org.carangorango.sgl.strategies;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableTable;

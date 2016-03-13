@@ -1,6 +1,7 @@
-package org.carangorango.sgl.core;
+package org.carangorango.sgl.strategies;
 
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.carangorango.sgl.core.SignalingStrategy;
 
 public final class MixedStrategy<I, C> implements SignalingStrategy<I, C> {
 
