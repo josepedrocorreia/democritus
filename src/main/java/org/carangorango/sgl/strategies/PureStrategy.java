@@ -5,7 +5,7 @@ import org.carangorango.sgl.core.SignalingStrategy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -32,7 +32,7 @@ public final class PureStrategy<I, C> implements SignalingStrategy<I, C> {
         return new PureStrategy<>(choiceFunction);
     }
 
-    public static <I, C> PureStrategy<I, C> create(List<I> informationSet, List<C> choices)
+    public static <I, C> PureStrategy<I, C> create(Set<I> informationSet, List<C> choices)
             throws NullPointerException, IllegalArgumentException {
         checkNotNull(informationSet);
         checkNotNull(choices);
@@ -41,8 +41,11 @@ public final class PureStrategy<I, C> implements SignalingStrategy<I, C> {
         checkArgument(informationSet.size() == choices.size(),
                 "Information set and choice set should have the same number of values");
         HashMap<I, C> choiceFunction = new HashMap<>();
-        IntStream.range(0, informationSet.size()).
-                forEach(i -> choiceFunction.put(informationSet.get(i), choices.get(i)));
+        int choiceIndex = 0;
+        for (I info : informationSet) {
+            choiceFunction.put(info, choices.get(choiceIndex));
+            choiceIndex++;
+        }
         return new PureStrategy<>(choiceFunction);
     }
 
