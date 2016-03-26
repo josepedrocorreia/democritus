@@ -1,6 +1,8 @@
 package org.carangorango.sgl.strategies;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,11 +14,7 @@ public class PureStrategyTest {
 
     @Before
     public void createExample() throws Exception {
-        this.strategy = PureStrategy.create(ImmutableMap.<Integer, Integer>builder()
-                .put(1, 1)
-                .put(2, 2)
-                .put(3, 2)
-                .build());
+        this.strategy = PureStrategy.create(ImmutableSet.of(1, 2, 3), ImmutableList.of(1, 2, 2));
     }
 
     @Test
@@ -34,6 +32,26 @@ public class PureStrategyTest {
     @Test(expected = IllegalArgumentException.class)
     public void factoryMethodShouldNotAllowEmptyMapArgument() {
         PureStrategy.create(ImmutableMap.of());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldNotAllowEmptyInformationSetArgument() {
+        PureStrategy.create(ImmutableSet.of(), ImmutableList.of("A"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldNotAllowEmptyChoiceListArgument() {
+        PureStrategy.create(ImmutableSet.of("A"), ImmutableList.of());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldNotAllowDifferentSizeArguments1() {
+        PureStrategy.create(ImmutableSet.of("A"), ImmutableList.of("A", "B"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void factoryMethodShouldNotAllowDifferentSizeArguments2() {
+        PureStrategy.create(ImmutableSet.of("A", "B"), ImmutableList.of("A"));
     }
 
     @Test(expected = NullPointerException.class)
