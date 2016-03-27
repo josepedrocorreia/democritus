@@ -20,7 +20,7 @@ public class LewisianGameTest {
                                 {0.0, 1.0, 0.0},
                                 {0.0, 0.0, 1.0}});
         LewisianGame<String, String, String> game = new LewisianGame<>(states, messages, actions, payoffTable);
-        assertEquals(states, game.getStates());
+        assertEquals(states, game.getStateSpace().getStates());
         assertEquals(messages, game.getMessages());
         assertEquals(actions, game.getActions());
         assertEquals(Double.valueOf(1.0), game.utility("R1", "C1").getSenderPayoff());
@@ -43,7 +43,7 @@ public class LewisianGameTest {
                                 {0.5, 1.2, 0.0},
                                 {0.5, 0.2, 1.0}});
         LewisianGame<String, String, String> game = new LewisianGame<>(states, messages, actions, payoffTable);
-        assertEquals(states, game.getStates());
+        assertEquals(states, game.getStateSpace().getStates());
         assertEquals(messages, game.getMessages());
         assertEquals(actions, game.getActions());
         assertEquals(Double.valueOf(1.5), game.utility("R1", "C1").getSenderPayoff());

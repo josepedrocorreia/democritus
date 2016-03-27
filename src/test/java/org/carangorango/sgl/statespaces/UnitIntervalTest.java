@@ -10,31 +10,31 @@ public class UnitIntervalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidConstructorCall1() {
-        new UnitInterval(1);
+        UnitInterval.createUnitInterval(1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidConstructorCall2() {
-        new UnitInterval(0);
+        UnitInterval.createUnitInterval(0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidConstructorCall3() {
-        new UnitInterval(-1);
+        UnitInterval.createUnitInterval(-1);
     }
 
     @Test
     public void testValidConstructorCall() {
-        UnitInterval interval = new UnitInterval(3);
-        assertEquals(ImmutableSet.of(new Fraction(0), new Fraction(1, 2), new Fraction(1)), interval.getPoints());
+        UnitInterval interval = UnitInterval.createUnitInterval(3);
+        assertEquals(ImmutableSet.of(Fraction.ZERO, Fraction.ONE_HALF, Fraction.ONE), interval.getStates());
     }
 
     @Test
     public void testDistance() throws Exception {
-        UnitInterval interval = new UnitInterval(3);
-        Fraction x1 = new Fraction(0);
-        Fraction x2 = new Fraction(1, 2);
-        Fraction x3 = new Fraction(1);
+        UnitInterval interval = UnitInterval.createUnitInterval(3);
+        Fraction x1 = Fraction.ZERO;
+        Fraction x2 = Fraction.ONE_HALF;
+        Fraction x3 = Fraction.ONE;
         // coincidence
         assertEquals(0.0, interval.distance(x1, x1).doubleValue(), 0.0);
         // symmetry

@@ -3,24 +3,25 @@ package org.carangorango.sgl.games;
 import org.carangorango.sgl.core.CheapTalkSignalingGame;
 import org.carangorango.sgl.core.Payoff;
 import org.carangorango.sgl.core.PayoffTable;
+import org.carangorango.sgl.core.StateSpace;
 
 import java.util.Set;
 
 public class LewisianGame<S, M, A> implements CheapTalkSignalingGame<S, M, A> {
 
-    private Set<S> states;
+    private StateSpace<S> states;
     private Set<M> messages;
     private Set<A> actions;
     private PayoffTable<S, A> payoffTable;
 
     public LewisianGame(Set<S> states, Set<M> messages, Set<A> actions, PayoffTable<S, A> payoffTable) {
-        this.states = states;
+        this.states = StateSpace.createUniform(states);
         this.messages = messages;
         this.actions = actions;
         this.payoffTable = payoffTable;
     }
 
-    public Set<S> getStates() {
+    public StateSpace<S> getStateSpace() {
         return this.states;
     }
 

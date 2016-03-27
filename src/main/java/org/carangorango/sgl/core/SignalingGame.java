@@ -5,7 +5,7 @@ import java.util.Set;
 
 public interface SignalingGame<S, M, A> {
 
-    Set<S> getStates();
+    StateSpace<S> getStateSpace();
 
     Set<M> getMessages();
 

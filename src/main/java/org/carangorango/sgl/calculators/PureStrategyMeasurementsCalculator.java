@@ -3,6 +3,7 @@ package org.carangorango.sgl.calculators;
 import org.apache.commons.math3.fraction.Fraction;
 import org.carangorango.sgl.core.Payoff;
 import org.carangorango.sgl.core.SignalingGame;
+import org.carangorango.sgl.core.StateSpace;
 import org.carangorango.sgl.strategies.PureStrategy;
 
 import java.util.Optional;
@@ -20,9 +21,9 @@ public class PureStrategyMeasurementsCalculator<S, M, A> {
         // TODO: check arguments
         Fraction senderExpectedUtility = Fraction.ZERO;
         Fraction receiverExpectedUtility = Fraction.ZERO;
-        // TODO: allow for other priors, jesus christ!
-        Fraction statePriorProbability = new Fraction(1, game.getStates().size());
-        for (S state : game.getStates()) {
+        StateSpace<S> stateSpace = game.getStateSpace();
+        for (S state : stateSpace.getStates()) {
+            Fraction statePriorProbability = stateSpace.getPriorProbability(state);
             M message = senderStrategy.play(state);
             A action = receiverStrategy.play(message);
             Payoff utility = game.utility(state, Optional.of(message), action);
