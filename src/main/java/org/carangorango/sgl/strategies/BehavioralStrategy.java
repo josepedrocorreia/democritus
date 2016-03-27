@@ -3,11 +3,10 @@ package org.carangorango.sgl.strategies;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import org.apache.commons.math3.distribution.EnumeratedDistribution;
+import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.Pair;
 import org.carangorango.sgl.core.SignalingStrategy;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,24 +15,36 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class BehavioralStrategy<I, C> implements SignalingStrategy<I, C> {
 
-    private Map<I, EnumeratedDistribution<C>> behavior;
+    private Map<I, Map<C, Fraction>> behavior;
 
-    protected BehavioralStrategy(Map<I, EnumeratedDistribution<C>> behavior) {
+    protected BehavioralStrategy(Map<I, Map<C, Fraction>> behavior) {
         this.behavior = behavior;
     }
 
-    public EnumeratedDistribution<C> expectedPlay(I information) {
+    public Map<C, Fraction> expectedPlay(I information) {
         checkArgument(behavior.containsKey(information), "Unknown information");
-        return this.behavior.get(information);
+        return behavior.get(information);
+    }
+
+    public Fraction getPlayProbability(I information, C choice) {
+        checkArgument(behavior.containsKey(information), "Unknown information");
+        checkArgument(behavior.get(information).containsKey(choice), "Unknown choice");
+        return behavior.get(information).get(choice);
     }
 
     @Override
     public C play(I information) {
-        return this.expectedPlay(information).sample();
+        Map<C, Fraction> expectedPlay = this.expectedPlay(information);
+        // TODO: Optimize
+        EnumeratedDistribution<C> distribution =
+                new EnumeratedDistribution<>(expectedPlay.entrySet().stream().map(
+                        entry -> new Pair<>(entry.getKey(), entry.getValue().doubleValue())
+                ).collect(Collectors.toList()));
+        return distribution.sample();
     }
 
     // TODO: Simplify please, too freaking complex...
-    public static <I, C> BehavioralStrategy<I, C> createBehavioralStrategy(Table<I, C, Double> probabilities)
+    public static <I, C> BehavioralStrategy<I, C> createBehavioralStrategy(Table<I, C, Fraction> probabilities)
             throws NullPointerException, IllegalArgumentException {
         checkNotNull(probabilities != null, "Argument should not be null");
         checkArgument(probabilities.size() != 0, "Probability map should not be empty");
@@ -45,14 +56,9 @@ public final class BehavioralStrategy<I, C> implements SignalingStrategy<I, C> {
         );
         checkArgument(probabilities.rowKeySet().stream()
                         .allMatch(i -> probabilities.row(i).values().stream()
-                                .collect(Collectors.summingDouble(Double::doubleValue)) == 1),
+                                .collect(Collectors.summingDouble(Fraction::doubleValue)) == 1),
                 "Every row in the table should be a proper probability mass function over the set of choices");
-        HashMap<I, EnumeratedDistribution<C>> behavior = new HashMap<>();
-        for (I information : probabilities.rowKeySet()) {
-            List<Pair<C, Double>> pairList = probabilities.row(information).entrySet().stream().map(x -> new Pair<>(x.getKey(), x.getValue())).collect(Collectors.toList());
-            behavior.put(information, new EnumeratedDistribution<>(pairList));
-        }
-        return new BehavioralStrategy<>(behavior);
+        return new BehavioralStrategy<>(probabilities.rowMap());
     }
 
 }
