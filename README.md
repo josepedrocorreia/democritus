@@ -1,9 +1,11 @@
-# Signaling Games Library (SGL)
+# democritus
 
-Java library for working with Signaling Games.
+According to Brian Skyrms<sup>[1](#f1)</sup>, Democritus was one of the first philosophers to hold that signals are conventional and arose by chance. Lewis-Skyrms signaling games give us a framework to explore the consequences of that idea in more detail. The tools in this project were developed to support that task, namely by making it easier to set up different games, run simulations, and analyse the results.
 
-[![Build Status](https://travis-ci.org/carangorango/sgl.svg?branch=master)](https://travis-ci.org/carangorango/sgl) [![codecov.io](https://codecov.io/github/carangorango/sgl/coverage.svg?branch=master)](https://codecov.io/github/carangorango/sgl?branch=master)
+[![Build Status](https://travis-ci.org/carangorango/democritus.svg?branch=master)](https://travis-ci.org/carangorango/democritus) [![codecov.io](https://codecov.io/github/carangorango/democritus/coverage.svg?branch=master)](https://codecov.io/github/carangorango/democritus?branch=master)
 
-[![Join the chat at https://gitter.im/carangorango/sgl](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/carangorango/sgl?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/carangorango/democritus](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/carangorango/democritus?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Stories in Ready](https://badge.waffle.io/carangorango/sgl.png?label=ready&title=Ready)](http://waffle.io/carangorango/sgl)
+[![Stories in Ready](https://badge.waffle.io/carangorango/democritus.png?label=ready&title=Ready)](http://waffle.io/carangorango/democritus)
+
+<a name="f1">[1]</a> Skyrms, Brian. Signals: Evolution, Learning, and Information. Oxford University Press, 2010.
