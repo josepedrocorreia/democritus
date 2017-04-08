@@ -1,10 +1,7 @@
 import sys
 import copy
 
-import numpy as np
 from numpy import random as random
-
-from scipy import stats as stats
 
 import matplotlib.pyplot as plt
 
