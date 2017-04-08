@@ -1,16 +1,6 @@
-language: java
+language: python
 
-jdk:
-  - oraclejdk8
+python:
+  - "2.7"
 
-after_success:
-  - gradle jacocoTestReport
-  - bash <(curl -s https://codecov.io/bash)
-
-notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/fd2b42ff1e65d495d69b
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: always    # options: [always|never|change] default: always
+script: python vagueness-games.py default.cfg
