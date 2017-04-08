@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import stats as stats
 
-class PerceptualSpace:
+class PerceptualSpace(object):
     
     def __init__(self, number_of_states, start=0, end=1):
         self.state_space = np.linspace(start, end, number_of_states, endpoint=False)

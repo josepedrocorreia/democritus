@@ -13,7 +13,7 @@ import ConfigParser
 
 from PerceptualSpaces import *
 
-def plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=False, vline=None):
+def plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=False, vline=None):
     plt.clf()
 
     plt.subplot(2,2,1)
@@ -142,7 +142,7 @@ while not converged:
                for t in xrange(NStates) for m in xrange(NMessages) for x in xrange(NStates))
     print ExpectedUtility/np.sum(Utility)
 
-    if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer)
+    if not BatchMode: plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer)
 
     SpeakerBefore, HearerBefore = copy.deepcopy(Speaker), copy.deepcopy(Hearer)
 
@@ -206,4 +206,4 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
 elif not BatchMode:
     print 'Language is NOT properly vague'
 
-if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
+if not BatchMode: plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
