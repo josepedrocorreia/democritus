@@ -97,12 +97,6 @@ Rationality = 20
 
 Dynamics = cfg.get('Signaling game', 'Evolutionary dynamics')
 
-## Settings - Sorites paradox
-
-Susceptibility = cfg.getfloat('Sorites paradox', 'Susceptibility')
-
-SoritesProgression = cfg.get('Sorites paradox', 'Progression mode')
-
 ## Initialization
 
 PerceptualSpace = PerceptualSpace(NStates).state_space
@@ -211,107 +205,5 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
     print 'Language is proper vague language'
 elif not BatchMode:
     print 'Language is NOT properly vague'
-
-if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
-
-for n in []:#xrange(0, NStates):
-    if SoritesProgression == 'sequential':
-        i = n
-    elif SoritesProgression == 'random':
-        i = random.randint(0, NStates)
-
-    ExpectedUtility = sum(Priors[t] * Speaker[t,m] * Hearer[m,x] * Utility[t,x]
-               for t in xrange(NStates) for m in xrange(NMessages) for x in xrange(NStates))
-    print ExpectedUtility/np.sum(Utility)
-
-    #if not BatchMode: print 'State', n, ':', PerceptualSpace[i]
-
-    if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, vline=PerceptualSpace[i])
-
-    Response = np.zeros((NStates,NSpeakerActions))
-    for m in xrange(NSpeakerActions):
-        Response[i,m] = 1 if Speaker[i,m] == max(Speaker[i]) else 0
-
-    if LimitedPerception:
-        Response = np.dot(Confusion, Response)
-
-    Speaker = (1 - Susceptibility) * Speaker + Susceptibility * Response
-    
-    Speaker = makePDFPerRow(Speaker)
-
-#    UtilityHearer = np.array([ [ np.dot(Priors * Speaker[:,m], Utility[t]) for t in xrange(NStates) ] for m in xrange(NMessages) ])
-
-#    for m in xrange(NMessages):
-#        for t in xrange(NStates):
-#            if Dynamics == 'replicator':
-#                Hearer[m,t] = Hearer[m,t] * UtilityHearer[m,t] * NStates / sum(UtilityHearer[m])
-#            elif Dynamics == 'best response':
-#                Hearer[m,t] = 1 if UtilityHearer[m,t] == max(UtilityHearer[m]) else 0
-#            elif Dynamics == 'quantal best response':
-#                Hearer[m,t] = np.exp(Rationality * UtilityHearer[m,t]) / sum(np.exp(Rationality * UtilityHearer[m]))
-#
-#    if LimitedPerception:
-#        Hearer = np.dot(Hearer, np.transpose(Confusion))
-#
-#    Hearer = makePDFPerRow(Hearer)
-    
-ParadoxReached = any([ all([ Speaker[t,m] == max(Speaker[t]) for t in xrange(NStates) ]) for m in xrange(NSpeakerActions) ])
-
-print str(NStates) + ',' + str(Acuity) + ',' + str(Susceptibility) + ',' + str(ParadoxReached)
-
-if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
-
-for i in xrange(0, NStates):
-    if i%50!=0 and i!=99: continue
-    Priors = np.zeros(NStates)
-    Priors[i] = 1
-        
-    ExpectedUtility = sum(Priors[t] * Speaker[t,m] * Hearer[m,x] * Utility[t,x]
-               for t in xrange(NStates) for m in xrange(NMessages) for x in xrange(NStates))
-    print ExpectedUtility/np.sum(Utility)
-
-    if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, vline=PerceptualSpace[i])
-
-    SpeakerBefore, HearerBefore = copy.deepcopy(Speaker), copy.deepcopy(Hearer)
-
-    ## Speaker strategy
-    
-    UtilitySpeaker = np.array([ [ np.dot(Hearer[m], Utility[t]) - Cost if m < NMessages else 0
-                                for m in xrange(NSpeakerActions) ]
-                              for t in xrange(NStates) ])
-
-    for t in xrange(NStates):
-        for m in xrange(NSpeakerActions):
-            if Dynamics == 'replicator':
-                Speaker[t,m] = Speaker[t,m] * (UtilitySpeaker[t,m] * NSpeakerActions + Cost * NSpeakerActions) / (sum(UtilitySpeaker[t]) + Cost * NSpeakerActions)
-            elif Dynamics == 'best response':
-                Speaker[t,m] = 1 if UtilitySpeaker[t,m] == max(UtilitySpeaker[t]) else 0
-            elif Dynamics == 'quantal best response':
-                Speaker[t,m] = np.exp(Rationality * UtilitySpeaker[t,m]) / sum(np.exp(Rationality * UtilitySpeaker[t]))
-
-    if LimitedPerception:
-        Speaker = np.dot(Confusion, Speaker)
-
-    Speaker = makePDFPerRow(Speaker)
-    
-    ## Hearer strategy
-    
-    UtilityHearer = np.array([ [ np.dot(Priors * Speaker[:,m], Utility[t])
-                               for t in xrange(NStates) ]
-                             for m in xrange(NMessages) ])
-
-    for m in xrange(NMessages):
-        for t in xrange(NStates):
-            if Dynamics == 'replicator':
-                Hearer[m,t] = Hearer[m,t] * (UtilityHearer[m,t] * NStates + 0) / (sum(UtilityHearer[m]) + 0)
-            elif Dynamics == 'best response':
-                Hearer[m,t] = 1 if UtilityHearer[m,t] == max(UtilityHearer[m]) else 0
-            elif Dynamics == 'quantal best response':
-                Hearer[m,t] = np.exp(Rationality * UtilityHearer[m,t]) / sum(np.exp(Rationality * UtilityHearer[m]))
-
-    if LimitedPerception:
-        Hearer = np.dot(Hearer, np.transpose(Confusion))
-
-    Hearer = makePDFPerRow(Hearer)
 
 if not BatchMode: plotStrategies(NStates, NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
