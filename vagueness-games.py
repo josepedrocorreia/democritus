@@ -5,8 +5,7 @@ from numpy import random as random
 
 import matplotlib.pyplot as plt
 
-# Switch to ConfigObj?
-import ConfigParser
+import yaml
 
 from PerceptualSpaces import *
 
@@ -75,24 +74,24 @@ if BatchMode:
     else:
         ConfigFile = sys.argv[1]
 else:
-    ConfigFile = 'default.cfg'
+    ConfigFile = 'default.yml'
     
 ## Settings - Signaling game
-cfg = ConfigParser.ConfigParser()
-cfg.read(ConfigFile)
+cfg_file = file(ConfigFile, 'r')
+cfg = yaml.load(cfg_file)
 
-NStates = cfg.getint('Signaling game', 'Number of states')
-PriorDistributionType = cfg.get('Signaling game', 'Prior distribution') # add additional options (central tendency, deviation, ...)
+NStates = cfg['state space']['size']
+PriorDistributionType = cfg['state space']['priors']
 
-NMessages = cfg.getint('Signaling game', 'Number of messages')
-OptOutOption = cfg.getboolean('Signaling game', 'Opt-out option')
+NMessages = cfg['message space']['size']
+OptOutOption = cfg['message space']['opt-out']
 
-LimitedPerception = cfg.getboolean('Signaling game', 'Limited perception') # make complex object
-Acuity = cfg.getint('Signaling game', 'Perceptual acuity')
+LimitedPerception = cfg['perception']['limited']
+Acuity = cfg['perception']['acuity']
 
 Rationality = 20
 
-Dynamics = cfg.get('Signaling game', 'Evolutionary dynamics')
+Dynamics = cfg['dynamics']
 
 ## Initialization
 

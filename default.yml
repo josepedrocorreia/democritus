@@ -1,0 +1,13 @@
+state space:
+    size: 100
+    priors: normal
+
+message space:
+    size: 2
+    opt-out: false
+
+perception:
+    limited: true
+    acuity: 10
+
+dynamics: best response
