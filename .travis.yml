@@ -5,4 +5,4 @@ python:
 
 before_install: python -m pip install --upgrade pip
 
-script: python vagueness-games.py default.cfg
+script: python vagueness-games.py default.yml --batch
