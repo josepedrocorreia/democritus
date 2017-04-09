@@ -7,4 +7,4 @@ before_install: python -m pip install --upgrade pip
 
 script: python vagueness-games.py smoke-test.yml --batch --output-prefix smoke-test
 
-after_script: [ $(wc -l smoke-test-sender.csv | cut -d' ' -f1) -eq "100" -a $(wc -l smoke-test-receiver.csv | cut -d' ' -f1) -eq "2" ]
+after_script: \[ $(wc -l smoke-test-sender.csv | cut -d' ' -f1) -eq "100" -a $(wc -l smoke-test-receiver.csv | cut -d' ' -f1) -eq "2" \]
