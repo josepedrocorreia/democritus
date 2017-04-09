@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 import yaml
 
+import argparse
+
 from PerceptualSpaces import *
 
 def plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=False, vline=None):
@@ -60,25 +62,18 @@ def makePDFPerRow(Matrix):
 def normalizePerRow(Matrix):
     return np.array([ normalize(Row) for Row in Matrix ])
     
-## Batch mode
+## Read arguments
 
-if len(sys.argv) == 1:
-    BatchMode = False
-else:
-    BatchMode = True
+argparser = argparse.ArgumentParser()
+argparser.add_argument('--batch', action='store_true')
+argparser.add_argument('configfile', type=file)
+args = argparser.parse_args()
 
-if BatchMode:
-    if len(sys.argv) < 2:
-        print "Usage: python", sys.argv[0], "<configuration file>"
-        sys.exit(1)
-    else:
-        ConfigFile = sys.argv[1]
-else:
-    ConfigFile = 'default.yml'
+BatchMode = args.batch
+ConfigFile = args.configfile
     
 ## Settings - Signaling game
-cfg_file = file(ConfigFile, 'r')
-cfg = yaml.load(cfg_file)
+cfg = yaml.load(ConfigFile)
 
 NStates = cfg['state space']['size']
 PriorDistributionType = cfg['state space']['priors']
