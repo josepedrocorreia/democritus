@@ -115,3 +115,7 @@ ENV/
 
 ### JetBrains stuff, just ignore everything
 .idea
+
+### Output files
+*-sender.csv
+*-receiver.csv

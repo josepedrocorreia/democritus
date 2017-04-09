@@ -1,17 +1,14 @@
-import sys
+import argparse
 import copy
-
-from numpy import random as random
-
 import matplotlib.pyplot as plt
+import time
+from numpy import random as random
 
 import yaml
 
-import argparse
-
 from PerceptualSpaces import *
 
-def plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=False, vline=None):
+def plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver, block=False, vline=None):
     plt.clf()
 
     plt.subplot(2,2,1)
@@ -27,23 +24,23 @@ def plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility,
     plt.title('Confusion')
 
     plt.subplot(2,2,3)
-    for m in xrange(NSpeakerActions):
+    for m in xrange(NSenderActions):
         MLabel = '$m_'+str(m)+'$' if m < NMessages else '$\\bot$'
-        plt.plot(PerceptualSpace, Speaker[:,m], label=MLabel)
+        plt.plot(PerceptualSpace, Sender[:,m], label=MLabel)
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(-0.1,1.1)
     plt.legend(loc='lower left')
-    plt.title('Speaker strategy')
+    plt.title('Sender strategy')
 
     plt.subplot(2,2,4)
     for m in xrange(NMessages):
-        plt.plot(PerceptualSpace, Hearer[m,:], label='$m_'+str(m)+'$')
+        plt.plot(PerceptualSpace, Receiver[m,:], label='$m_'+str(m)+'$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(ymin=0)
     plt.legend(loc='lower left')
-    plt.title('Hearer strategy')
+    plt.title('Receiver strategy')
 
     plt.show(block=block)
     plt.pause(0.01)
@@ -67,6 +64,7 @@ def normalizePerRow(Matrix):
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--batch', action='store_true')
 argparser.add_argument('configfile', type=file)
+argparser.add_argument('--output-prefix', default=time.strftime('%Y%m%d-%H%M%S'))
 args = argparser.parse_args()
 
 BatchMode = args.batch
@@ -116,12 +114,12 @@ Utility = Similarity
 Confusion = Similarity
 
 if OptOutOption: 
-    NSpeakerActions = NMessages + 1 # speaker can opt-out
+    NSenderActions = NMessages + 1 # sender can opt-out
 else:
-    NSpeakerActions = NMessages
+    NSenderActions = NMessages
 
-Speaker = makePDFPerRow(random.random((NStates,NSpeakerActions)))
-Hearer = makePDFPerRow(random.random((NMessages,NStates)))
+Sender = makePDFPerRow(random.random((NStates,NSenderActions)))
+Receiver = makePDFPerRow(random.random((NMessages,NStates)))
 
 # only used when there is an opt-out option
 Cost = np.sum(Utility) / NStates**2 if OptOutOption else 0
@@ -129,72 +127,78 @@ Cost = np.sum(Utility) / NStates**2 if OptOutOption else 0
 converged = False
 while not converged:
     
-    ExpectedUtility = sum(Priors[t] * Speaker[t,m] * Hearer[m,x] * Utility[t,x]
+    ExpectedUtility = sum(Priors[t] * Sender[t,m] * Receiver[m,x] * Utility[t,x]
                for t in xrange(NStates) for m in xrange(NMessages) for x in xrange(NStates))
     print ExpectedUtility/np.sum(Utility)
 
-    if not BatchMode: plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer)
+    if not BatchMode: plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver)
 
-    SpeakerBefore, HearerBefore = copy.deepcopy(Speaker), copy.deepcopy(Hearer)
+    SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
 
-    ## Speaker strategy
+    ## Sender strategy
     
-    UtilitySpeaker = np.array([ [ np.dot(Hearer[m], Utility[t]) - Cost if m < NMessages else 0
-                                for m in xrange(NSpeakerActions) ]
+    UtilitySender = np.array([ [ np.dot(Receiver[m], Utility[t]) - Cost if m < NMessages else 0
+                                for m in xrange(NSenderActions) ]
                               for t in xrange(NStates) ])
 
     for t in xrange(NStates):
-        for m in xrange(NSpeakerActions):
+        for m in xrange(NSenderActions):
             if Dynamics == 'replicator':
-                Speaker[t,m] = Speaker[t,m] * (UtilitySpeaker[t,m] * NSpeakerActions + Cost * NSpeakerActions) / (sum(UtilitySpeaker[t]) + Cost * NSpeakerActions)
+                Sender[t,m] = Sender[t,m] * (UtilitySender[t,m] * NSenderActions + Cost * NSenderActions) / (sum(UtilitySender[t]) + Cost * NSenderActions)
             elif Dynamics == 'best response':
-                Speaker[t,m] = 1 if UtilitySpeaker[t,m] == max(UtilitySpeaker[t]) else 0
+                Sender[t,m] = 1 if UtilitySender[t,m] == max(UtilitySender[t]) else 0
             elif Dynamics == 'quantal best response':
-                Speaker[t,m] = np.exp(Rationality * UtilitySpeaker[t,m]) / sum(np.exp(Rationality * UtilitySpeaker[t]))
+                Sender[t,m] = np.exp(Rationality * UtilitySender[t,m]) / sum(np.exp(Rationality * UtilitySender[t]))
 
     if LimitedPerception:
-        Speaker = np.dot(Confusion, Speaker)
+        Sender = np.dot(Confusion, Sender)
 
-    Speaker = makePDFPerRow(Speaker)
+    Sender = makePDFPerRow(Sender)
     
-    ## Hearer strategy
+    ## Receiver strategy
     
-    UtilityHearer = np.array([ [ np.dot(Priors * Speaker[:,m], Utility[t])
+    UtilityReceiver = np.array([ [ np.dot(Priors * Sender[:,m], Utility[t])
                                for t in xrange(NStates) ]
                              for m in xrange(NMessages) ])
 
     for m in xrange(NMessages):
         for t in xrange(NStates):
             if Dynamics == 'replicator':
-                Hearer[m,t] = Hearer[m,t] * (UtilityHearer[m,t] * NStates + 0) / (sum(UtilityHearer[m]) + 0)
+                Receiver[m,t] = Receiver[m,t] * (UtilityReceiver[m,t] * NStates + 0) / (sum(UtilityReceiver[m]) + 0)
             elif Dynamics == 'best response':
-                Hearer[m,t] = 1 if UtilityHearer[m,t] == max(UtilityHearer[m]) else 0
+                Receiver[m,t] = 1 if UtilityReceiver[m,t] == max(UtilityReceiver[m]) else 0
             elif Dynamics == 'quantal best response':
-                Hearer[m,t] = np.exp(Rationality * UtilityHearer[m,t]) / sum(np.exp(Rationality * UtilityHearer[m]))
+                Receiver[m,t] = np.exp(Rationality * UtilityReceiver[m,t]) / sum(np.exp(Rationality * UtilityReceiver[m]))
 
     if LimitedPerception:
-        Hearer = np.dot(Hearer, np.transpose(Confusion))
+        Receiver = np.dot(Receiver, np.transpose(Confusion))
 
-    Hearer = makePDFPerRow(Hearer)
+    Receiver = makePDFPerRow(Receiver)
 
-    if np.sum(abs(Speaker - SpeakerBefore)) < 0.01 and np.sum(abs(Hearer - HearerBefore)) < 0.01:
+    if np.sum(abs(Sender - SenderBefore)) < 0.01 and np.sum(abs(Receiver - ReceiverBefore)) < 0.01:
         converged = True
         if not BatchMode: print 'Language converged!'
 
-MaximalElements = [ np.where(Hearer[m] == Hearer[m].max())[0] for m in xrange(NMessages) ]
+MaximalElements = [ np.where(Receiver[m] == Receiver[m].max())[0] for m in xrange(NMessages) ]
 Criterion1 = all(len(MaximalElements[m]) == 1 for m in xrange(NMessages))
 
-Prototype = [ np.argmax(Hearer[m]) for m in xrange(NMessages) ]
+Prototype = [ np.argmax(Receiver[m]) for m in xrange(NMessages) ]
 CriterionX = all(Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in xrange(NMessages) for m2 in xrange(NMessages))
 
-# precision issues, otherwise Hearer[m,t1] > Hearer[m,t2]
-Criterion2 = all(all(Hearer[m,t1] > Hearer[m,t2] or Hearer[m,t2] - Hearer[m,t1] < 0.01 for t1 in xrange(NStates) for t2 in xrange(NStates) if Similarity[t1,Prototype[m]] > Similarity[t2,Prototype[m]]) for m in xrange(NMessages)) 
+# precision issues, otherwise Receiver[m,t1] > Receiver[m,t2]
+Criterion2 = all(all(Receiver[m,t1] > Receiver[m,t2] or Receiver[m,t2] - Receiver[m,t1] < 0.01 for t1 in xrange(NStates) for t2 in xrange(NStates) if Similarity[t1,Prototype[m]] > Similarity[t2,Prototype[m]]) for m in xrange(NMessages)) 
 
-Criterion3 = all(all(Speaker[t,m1] > Speaker[t,m2] or Speaker[t,m2] - Speaker[t,m1] < 0.01 for m1 in xrange(NMessages) for m2 in xrange(NMessages) if Similarity[t,Prototype[m1]] > Similarity[t,Prototype[m2]]) for t in xrange(NStates))
+Criterion3 = all(all(Sender[t,m1] > Sender[t,m2] or Sender[t,m2] - Sender[t,m1] < 0.01 for m1 in xrange(NMessages) for m2 in xrange(NMessages) if Similarity[t,Prototype[m1]] > Similarity[t,Prototype[m2]]) for t in xrange(NStates))
 
 if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
     print 'Language is proper vague language'
 elif not BatchMode:
     print 'Language is NOT properly vague'
 
-if not BatchMode: plotStrategies(NMessages, NSpeakerActions, PerceptualSpace, Priors, Utility, Confusion, Speaker, Hearer, block=True)
+if not BatchMode: plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver, block=True)
+
+# Outputting to file
+SenderOutputFilename = args.output_prefix + '-sender.csv'
+ReceiverOutputFilename = args.output_prefix + '-receiver.csv'
+np.savetxt(SenderOutputFilename, Sender, delimiter=',')
+np.savetxt(ReceiverOutputFilename, Receiver, delimiter=',')
