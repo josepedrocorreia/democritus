@@ -1,12 +1,13 @@
 import argparse
 import copy
 import matplotlib.pyplot as plt
+import numpy as np
 import time
-from numpy import random as random
 
 import yaml
 
-from PerceptualSpaces import *
+from statespaces import StateSpaceFactory
+
 
 def plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver, block=False, vline=None):
     plt.clf()
@@ -88,24 +89,10 @@ Dynamics = cfg['dynamics']
 
 ## Initialization
 
-PerceptualSpace = PerceptualSpace(NStates).state_space
-
-if PriorDistributionType == 'uniform':
-    Priors = UniformPerceptualSpace(NStates).prior_distribution
-elif PriorDistributionType == 'normal':
-    Priors = NormalPerceptualSpace(NStates).prior_distribution
-    Priors = makePDF(Priors)
-elif PriorDistributionType == 'degenerate':
-    Priors = np.zeros(NStates)
-    Priors[NStates/2] = 1
-elif PriorDistributionType == 'bimodal':
-    Priors1 = makePDF(stats.norm.pdf(PerceptualSpace, loc=0, scale=0.1))
-    Priors2 = makePDF(stats.norm.pdf(PerceptualSpace, loc=1, scale=0.1))
-    Priors = makePDF(Priors1 + Priors2)
-
-Distance = np.array([[ abs(x - y)
-                     for y in PerceptualSpace ]
-                    for x in PerceptualSpace ])
+StateSpace = StateSpaceFactory.create(cfg['state space'])
+PerceptualSpace = StateSpace.states
+Priors = StateSpace.prior_distribution
+Distance = StateSpace.distance_matrix
 
 Similarity = np.exp(-(Distance**2 / (1.0 / Acuity)**2))
 
@@ -118,8 +105,8 @@ if OptOutOption:
 else:
     NSenderActions = NMessages
 
-Sender = makePDFPerRow(random.random((NStates,NSenderActions)))
-Receiver = makePDFPerRow(random.random((NMessages,NStates)))
+Sender = makePDFPerRow(np.random.random((NStates,NSenderActions)))
+Receiver = makePDFPerRow(np.random.random((NMessages,NStates)))
 
 # only used when there is an opt-out option
 Cost = np.sum(Utility) / NStates**2 if OptOutOption else 0
