@@ -3,7 +3,7 @@ state space:
     priors: normal
 
 message space:
-    size: 3
+    size: 2
     opt-out: false
 
 perception:
