@@ -5,37 +5,53 @@ from scipy import stats as stats
 class StateSpaceFactory(object):
     @staticmethod
     def create(spec):
-        if spec['priors'] == 'uniform':
-            return UniformEuclideanSpace(number_of_states=spec['size'])
-        if spec['priors'] == 'normal':
-            return NormalEuclideanSpace(number_of_states=spec['size'])
-        # if all else fails
-        raise ValueError('Invalid state space specification: ' + str(spec))
+        if spec['type'] == 'set':
+            return SimpleSet(spec)
+        if spec['type'] == 'metric':
+            return MetricSpace(spec)
+        else:
+            raise ValueError('Invalid state space specification: ' + str(spec))
 
 
-class IntervalSet(object):
-    def __init__(self, number_of_states, start=0, end=1):
-        self.states = np.linspace(start, end, number_of_states, endpoint=True)
+class SimpleSet(object):
+    def __init__(self, spec):
+        self.states = StateSetFactory.create(spec['states'])
+        self.priors = PriorsFactory.create(spec['priors'], self.states)
 
     def size(self):
         return len(self.states)
 
 
-class EuclideanSpace(IntervalSet):
-    def __init__(self, number_of_states, start=0, end=1):
-        IntervalSet.__init__(self, number_of_states, start, end)
-        self.distances = np.array([[abs(x - y)
-                                    for y in self.states]
-                                   for x in self.states])
+class MetricSpace(SimpleSet):
+    def __init__(self, spec):
+        SimpleSet.__init__(self, spec)
+        self.distances = MetricFactory.create(spec['metric'], self.states)
 
 
-class UniformEuclideanSpace(EuclideanSpace):
-    def __init__(self, number_of_states, start=0, end=1):
-        EuclideanSpace.__init__(self, number_of_states, start, end)
-        self.priors = stats.uniform.pdf(self.states, scale=len(self.states))
+class StateSetFactory(object):
+    @staticmethod
+    def create(spec):
+        if spec['type'] == 'interval':
+            return np.linspace(start=spec['start'], stop=spec['end'], num=spec['size'], endpoint=True)
+        else:
+            raise ValueError('Invalid state set specification: ' + str(spec))
 
 
-class NormalEuclideanSpace(EuclideanSpace):
-    def __init__(self, number_of_states, start=0, end=1, center=0.5, standard_deviation=0.1):
-        EuclideanSpace.__init__(self, number_of_states, start, end)
-        self.priors = stats.norm.pdf(self.states, loc=center, scale=standard_deviation)
+class PriorsFactory(object):
+    @staticmethod
+    def create(spec, states):
+        if spec['type'] == 'uniform':
+            return stats.uniform.pdf(states, scale=len(states))
+        elif spec['type'] == 'normal':
+            return stats.norm.pdf(states, loc=spec['mean'], scale=spec['standard deviation'])
+        else:
+            raise ValueError('Invalid priors specification: ' + str(spec))
+
+
+class MetricFactory(object):
+    @staticmethod
+    def create(spec, states):
+        if spec['type'] == 'euclidean':
+            return np.array([[abs(x - y) for y in states] for x in states])
+        else:
+            raise ValueError('Invalid metric specification: ' + str(spec))
