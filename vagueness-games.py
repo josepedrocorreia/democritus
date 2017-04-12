@@ -6,6 +6,7 @@ import time
 
 import yaml
 
+from evolutionarydynamics import EvolutionaryDynamicsFactory
 from statespaces import StateSpaceFactory
 
 
@@ -79,13 +80,12 @@ PriorDistributionType = cfg['state space']['priors']
 
 NMessages = cfg['message space']['size']
 OptOutOption = cfg['message space']['opt-out']
+MessageSpace = range(NMessages)
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
 
-Rationality = 20
-
-Dynamics = cfg['dynamics']
+Dynamics = EvolutionaryDynamicsFactory.create(cfg['dynamics'])
 
 ## Initialization
 
@@ -123,19 +123,8 @@ while not converged:
     SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
 
     ## Sender strategy
-    
-    UtilitySender = np.array([ [ np.dot(Receiver[m], Utility[t]) - Cost if m < NMessages else 0
-                                for m in xrange(NSenderActions) ]
-                              for t in xrange(NStates) ])
 
-    for t in xrange(NStates):
-        for m in xrange(NSenderActions):
-            if Dynamics == 'replicator':
-                Sender[t,m] = Sender[t,m] * (UtilitySender[t,m] * NSenderActions + Cost * NSenderActions) / (sum(UtilitySender[t]) + Cost * NSenderActions)
-            elif Dynamics == 'best response':
-                Sender[t,m] = 1 if UtilitySender[t,m] == max(UtilitySender[t]) else 0
-            elif Dynamics == 'quantal best response':
-                Sender[t,m] = np.exp(Rationality * UtilitySender[t,m]) / sum(np.exp(Rationality * UtilitySender[t]))
+    Sender = Dynamics.update_sender(Sender, Receiver, StateSpace, MessageSpace, Utility)
 
     if LimitedPerception:
         Sender = np.dot(Confusion, Sender)
@@ -144,18 +133,7 @@ while not converged:
     
     ## Receiver strategy
     
-    UtilityReceiver = np.array([ [ np.dot(Priors * Sender[:,m], Utility[t])
-                               for t in xrange(NStates) ]
-                             for m in xrange(NMessages) ])
-
-    for m in xrange(NMessages):
-        for t in xrange(NStates):
-            if Dynamics == 'replicator':
-                Receiver[m,t] = Receiver[m,t] * (UtilityReceiver[m,t] * NStates + 0) / (sum(UtilityReceiver[m]) + 0)
-            elif Dynamics == 'best response':
-                Receiver[m,t] = 1 if UtilityReceiver[m,t] == max(UtilityReceiver[m]) else 0
-            elif Dynamics == 'quantal best response':
-                Receiver[m,t] = np.exp(Rationality * UtilityReceiver[m,t]) / sum(np.exp(Rationality * UtilityReceiver[m]))
+    Receiver = Dynamics.update_receiver(Sender, Receiver, StateSpace, MessageSpace, Utility)
 
     if LimitedPerception:
         Receiver = np.dot(Receiver, np.transpose(Confusion))
