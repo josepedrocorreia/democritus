@@ -21,18 +21,18 @@ class IntervalSet(object):
 class EuclideanSpace(IntervalSet):
     def __init__(self, number_of_states, start=0, end=1):
         IntervalSet.__init__(self, number_of_states, start, end)
-        self.distance_matrix = np.array([[abs(x - y)
-                                          for y in self.states]
-                                         for x in self.states])
+        self.distances = np.array([[abs(x - y)
+                                    for y in self.states]
+                                   for x in self.states])
 
 
 class UniformEuclideanSpace(EuclideanSpace):
     def __init__(self, number_of_states, start=0, end=1):
         EuclideanSpace.__init__(self, number_of_states, start, end)
-        self.prior_distribution = stats.uniform.pdf(self.states, scale=len(self.states))
+        self.priors = stats.uniform.pdf(self.states, scale=len(self.states))
 
 
 class NormalEuclideanSpace(EuclideanSpace):
     def __init__(self, number_of_states, start=0, end=1, center=0.5, standard_deviation=0.1):
         EuclideanSpace.__init__(self, number_of_states, start, end)
-        self.prior_distribution = stats.norm.pdf(self.states, loc=center, scale=standard_deviation)
+        self.priors = stats.norm.pdf(self.states, loc=center, scale=standard_deviation)

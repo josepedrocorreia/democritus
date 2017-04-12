@@ -90,8 +90,8 @@ Dynamics = EvolutionaryDynamicsFactory.create(cfg['dynamics'])
 
 StateSpace = StateSpaceFactory.create(cfg['state space'])
 PerceptualSpace = StateSpace.states
-Priors = StateSpace.prior_distribution
-Distance = StateSpace.distance_matrix
+Priors = StateSpace.priors
+Distance = StateSpace.distances
 
 Similarity = np.exp(-(Distance**2 / (1.0 / Acuity)**2))
 
