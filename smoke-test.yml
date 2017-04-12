@@ -4,7 +4,6 @@ state space:
 
 message space:
   size: 2
-  opt-out: false
 
 perception:
   limited: true

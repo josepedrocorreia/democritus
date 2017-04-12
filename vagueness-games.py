@@ -79,7 +79,6 @@ NStates = cfg['state space']['size']
 PriorDistributionType = cfg['state space']['priors']
 
 NMessages = cfg['message space']['size']
-OptOutOption = cfg['message space']['opt-out']
 MessageSpace = range(NMessages)
 
 LimitedPerception = cfg['perception']['limited']
@@ -100,16 +99,8 @@ Utility = Similarity
 
 Confusion = Similarity
 
-if OptOutOption: 
-    NSenderActions = NMessages + 1 # sender can opt-out
-else:
-    NSenderActions = NMessages
-
-Sender = makePDFPerRow(np.random.random((NStates,NSenderActions)))
+Sender = makePDFPerRow(np.random.random((NStates, NMessages)))
 Receiver = makePDFPerRow(np.random.random((NMessages,NStates)))
-
-# only used when there is an opt-out option
-Cost = np.sum(Utility) / NStates**2 if OptOutOption else 0
 
 converged = False
 while not converged:
@@ -118,7 +109,7 @@ while not converged:
                for t in xrange(NStates) for m in xrange(NMessages) for x in xrange(NStates))
     print ExpectedUtility/np.sum(Utility)
 
-    if not BatchMode: plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver)
+    if not BatchMode: plotStrategies(NMessages, NMessages, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver)
 
     SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
 
@@ -160,7 +151,8 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
 elif not BatchMode:
     print 'Language is NOT properly vague'
 
-if not BatchMode: plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver, block=True)
+if not BatchMode: plotStrategies(NMessages, NMessages, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver,
+                                 block=True)
 
 # Outputting to file
 SenderOutputFilename = args.output_prefix + '-sender.csv'
