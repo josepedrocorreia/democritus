@@ -16,7 +16,8 @@ class StateSpaceFactory(object):
 class SimpleSet(object):
     def __init__(self, spec):
         self.states = StateSetFactory.create(spec['states'])
-        self.priors = PriorsFactory.create(spec['priors'], self.states)
+        priors_spec = {'type': 'uniform'} if 'priors' not in spec else spec['priors']
+        self.priors = PriorsFactory.create(priors_spec, self.states)
 
     def size(self):
         return len(self.states)
@@ -25,7 +26,8 @@ class SimpleSet(object):
 class MetricSpace(SimpleSet):
     def __init__(self, spec):
         SimpleSet.__init__(self, spec)
-        self.distances = MetricFactory.create(spec['metric'], self.states)
+        metric_spec = {'type': 'euclidean'} if 'metric' not in spec else spec['metric']
+        self.distances = MetricFactory.create(metric_spec, self.states)
 
 
 class StateSetFactory(object):
