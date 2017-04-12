@@ -13,7 +13,7 @@ class EvolutionaryDynamics(object):
 
 class ReplicatorDynamics(EvolutionaryDynamics):
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
@@ -25,7 +25,7 @@ class ReplicatorDynamics(EvolutionaryDynamics):
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
@@ -41,7 +41,7 @@ class ReplicatorDynamics(EvolutionaryDynamics):
 
 class BestResponseDynamics(EvolutionaryDynamics):
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
@@ -52,7 +52,7 @@ class BestResponseDynamics(EvolutionaryDynamics):
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
@@ -70,7 +70,7 @@ class QuantalResponseDynamics(EvolutionaryDynamics):
         self.rationality = spec['rationality']
 
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
@@ -82,7 +82,7 @@ class QuantalResponseDynamics(EvolutionaryDynamics):
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = len(state_space.states)
+        n_states = state_space.size()
         n_messages = len(message_space)
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])

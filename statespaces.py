@@ -17,6 +17,9 @@ class IntervalSet(object):
     def __init__(self, number_of_states, start=0, end=1):
         self.states = np.linspace(start, end, number_of_states, endpoint=True)
 
+    def size(self):
+        return len(self.states)
+
 
 class EuclideanSpace(IntervalSet):
     def __init__(self, number_of_states, start=0, end=1):
