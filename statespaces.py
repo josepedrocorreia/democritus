@@ -6,14 +6,14 @@ class StateSpaceFactory(object):
     @staticmethod
     def create(spec):
         if spec['type'] == 'set':
-            return SimpleSet(spec)
+            return SetSpace(spec)
         if spec['type'] == 'metric':
             return MetricSpace(spec)
         else:
             raise ValueError('Invalid state space specification: ' + str(spec))
 
 
-class SimpleSet(object):
+class SetSpace(object):
     def __init__(self, spec):
         self.states = StateSetFactory.create(spec['states'])
         priors_spec = {'type': 'uniform'} if 'priors' not in spec else spec['priors']
@@ -23,9 +23,9 @@ class SimpleSet(object):
         return len(self.states)
 
 
-class MetricSpace(SimpleSet):
+class MetricSpace(SetSpace):
     def __init__(self, spec):
-        SimpleSet.__init__(self, spec)
+        SetSpace.__init__(self, spec)
         metric_spec = {'type': 'euclidean'} if 'metric' not in spec else spec['metric']
         self.distances = MetricFactory.create(metric_spec, self.states)
 
