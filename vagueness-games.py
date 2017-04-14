@@ -6,6 +6,7 @@ import time
 
 import yaml
 
+import utils
 from evolutionarydynamics import EvolutionaryDynamicsFactory
 from statespaces import StateSpaceFactory
 
@@ -47,20 +48,6 @@ def plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, 
     plt.show(block=block)
     plt.pause(0.01)
 
-def normalize(Vector):
-    return Vector / np.max(Vector)
-
-def makePDF(Vector):
-    if np.sum(Vector) == 0:
-        Vector = np.ones(np.shape(Vector))
-    return Vector / np.sum(Vector)
-
-def makePDFPerRow(Matrix):
-    return np.array([ makePDF(Row) for Row in Matrix ])
-
-def normalizePerRow(Matrix):
-    return np.array([ normalize(Row) for Row in Matrix ])
-    
 ## Read arguments
 
 argparser = argparse.ArgumentParser()
@@ -92,8 +79,8 @@ Utility = Similarity
 
 Confusion = Similarity
 
-Sender = makePDFPerRow(np.random.random((StateSpace.size(), NMessages)))
-Receiver = makePDFPerRow(np.random.random((NMessages, StateSpace.size())))
+Sender = utils.make_row_stochastic(np.random.random((StateSpace.size(), NMessages)))
+Receiver = utils.make_row_stochastic(np.random.random((NMessages, StateSpace.size())))
 
 converged = False
 while not converged:
@@ -115,7 +102,7 @@ while not converged:
     if LimitedPerception:
         Sender = np.dot(Confusion, Sender)
 
-    Sender = makePDFPerRow(Sender)
+    Sender = utils.make_row_stochastic(Sender)
     
     ## Receiver strategy
     
@@ -124,7 +111,7 @@ while not converged:
     if LimitedPerception:
         Receiver = np.dot(Receiver, np.transpose(Confusion))
 
-    Receiver = makePDFPerRow(Receiver)
+    Receiver = utils.make_row_stochastic(Receiver)
 
     if np.sum(abs(Sender - SenderBefore)) < 0.01 and np.sum(abs(Receiver - ReceiverBefore)) < 0.01:
         converged = True
