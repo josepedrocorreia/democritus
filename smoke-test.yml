@@ -2,7 +2,7 @@ state space:
   type: metric
   states:
     type: interval
-    size: 21
+    size: 30
     start: 0
     end: 1
 
