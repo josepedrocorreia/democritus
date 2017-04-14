@@ -5,4 +5,4 @@ python:
 
 before_install: python -m pip install --upgrade pip
 
-script: py.test
+script: PYTHONPATH=$PYTHONPATH:democritus py.test
