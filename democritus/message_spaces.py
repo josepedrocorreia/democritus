@@ -19,6 +19,6 @@ class MessageSetFactory(object):
     @staticmethod
     def create(spec):
         if spec['type'] == 'numbered':
-            return range(spec['size'])
+            return range(1, spec['size'] + 1)
         else:
             raise ValueError('Invalid message set specification: ' + str(spec))
