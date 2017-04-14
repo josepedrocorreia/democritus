@@ -6,10 +6,10 @@ import time
 
 import yaml
 
-import utils
-from evolutionarydynamics import EvolutionaryDynamicsFactory
-from messagespaces import MessageSpaceFactory
-from statespaces import StateSpaceFactory
+from democritus import utils
+from democritus.evolutionary_dynamics import EvolutionaryDynamicsFactory
+from democritus.message_spaces import MessageSpaceFactory
+from democritus.state_spaces import StateSpaceFactory
 
 
 def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=False, vline=None):
