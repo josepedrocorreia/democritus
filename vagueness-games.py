@@ -8,6 +8,7 @@ import yaml
 
 import utils
 from evolutionarydynamics import EvolutionaryDynamicsFactory
+from messagespaces import MessageSpaceFactory
 from statespaces import StateSpaceFactory
 
 
@@ -63,15 +64,14 @@ ConfigFile = args.configfile
 
 cfg = yaml.load(ConfigFile)
 
-NMessages = cfg['message space']['size']
-MessageSpace = range(NMessages)
+StateSpace = StateSpaceFactory.create(cfg['state space'])
+
+MessageSpace = MessageSpaceFactory.create(cfg['message space'])
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
 
 Dynamics = EvolutionaryDynamicsFactory.create(cfg['dynamics'])
-
-StateSpace = StateSpaceFactory.create(cfg['state space'])
 
 Similarity = np.exp(-(StateSpace.distances ** 2 / (1.0 / Acuity) ** 2))
 
@@ -79,18 +79,19 @@ Utility = Similarity
 
 Confusion = Similarity
 
-Sender = utils.make_row_stochastic(np.random.random((StateSpace.size(), NMessages)))
-Receiver = utils.make_row_stochastic(np.random.random((NMessages, StateSpace.size())))
+Sender = utils.make_row_stochastic(np.random.random((StateSpace.size(), MessageSpace.size())))
+Receiver = utils.make_row_stochastic(np.random.random((MessageSpace.size(), StateSpace.size())))
 
 converged = False
 while not converged:
 
     ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
-                          for t in xrange(StateSpace.size()) for m in xrange(NMessages) for x in xrange(
+                          for t in xrange(StateSpace.size()) for m in xrange(MessageSpace.size()) for x in xrange(
         StateSpace.size()))
     print ExpectedUtility/np.sum(Utility)
 
-    if not BatchMode: plotStrategies(NMessages, NMessages, StateSpace.states, StateSpace.priors, Utility, Confusion,
+    if not BatchMode: plotStrategies(MessageSpace.size(), MessageSpace.size(), StateSpace.states, StateSpace.priors,
+                                     Utility, Confusion,
                                      Sender, Receiver)
 
     SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
@@ -117,20 +118,23 @@ while not converged:
         converged = True
         if not BatchMode: print 'Language converged!'
 
-MaximalElements = [ np.where(Receiver[m] == Receiver[m].max())[0] for m in xrange(NMessages) ]
-Criterion1 = all(len(MaximalElements[m]) == 1 for m in xrange(NMessages))
+MaximalElements = [np.where(Receiver[m] == Receiver[m].max())[0] for m in xrange(MessageSpace.size())]
+Criterion1 = all(len(MaximalElements[m]) == 1 for m in xrange(MessageSpace.size()))
 
-Prototype = [ np.argmax(Receiver[m]) for m in xrange(NMessages) ]
-CriterionX = all(Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in xrange(NMessages) for m2 in xrange(NMessages))
+Prototype = [np.argmax(Receiver[m]) for m in xrange(MessageSpace.size())]
+CriterionX = all(
+    Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in xrange(MessageSpace.size()) for m2 in xrange(
+        MessageSpace.size()))
 
 # precision issues, otherwise Receiver[m,t1] > Receiver[m,t2]
 Criterion2 = all(all(Receiver[m, t1] > Receiver[m, t2] or Receiver[m, t2] - Receiver[m, t1] < 0.01 for t1 in xrange(
     StateSpace.size()) for t2 in xrange(StateSpace.size()) if
-                     Similarity[t1, Prototype[m]] > Similarity[t2, Prototype[m]]) for m in xrange(NMessages))
+                     Similarity[t1, Prototype[m]] > Similarity[t2, Prototype[m]]) for m in xrange(MessageSpace.size()))
 
 Criterion3 = all(all(
-    Sender[t, m1] > Sender[t, m2] or Sender[t, m2] - Sender[t, m1] < 0.01 for m1 in xrange(NMessages) for m2 in
-    xrange(NMessages) if Similarity[t, Prototype[m1]] > Similarity[t, Prototype[m2]]) for t in xrange(
+    Sender[t, m1] > Sender[t, m2] or Sender[t, m2] - Sender[t, m1] < 0.01 for m1 in xrange(MessageSpace.size()) for m2
+    in
+    xrange(MessageSpace.size()) if Similarity[t, Prototype[m1]] > Similarity[t, Prototype[m2]]) for t in xrange(
     StateSpace.size()))
 
 if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
@@ -138,7 +142,8 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
 elif not BatchMode:
     print 'Language is NOT properly vague'
 
-if not BatchMode: plotStrategies(NMessages, NMessages, StateSpace.states, StateSpace.priors, Utility, Confusion, Sender,
+if not BatchMode: plotStrategies(MessageSpace.size(), MessageSpace.size(), StateSpace.states, StateSpace.priors,
+                                 Utility, Confusion, Sender,
                                  Receiver,
                                  block=True)
 

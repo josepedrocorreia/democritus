@@ -2,12 +2,15 @@ state space:
   type: metric
   states:
     type: interval
-    size: 100
+    size: 21
     start: 0
     end: 1
 
 message space:
-  size: 2
+  type: set
+  messages:
+    type: numbered
+    size: 2
 
 perception:
   limited: true
