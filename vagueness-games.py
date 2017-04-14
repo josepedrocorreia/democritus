@@ -12,34 +12,33 @@ from messagespaces import MessageSpaceFactory
 from statespaces import StateSpaceFactory
 
 
-def plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, Confusion, Sender, Receiver, block=False, vline=None):
+def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=False, vline=None):
     plt.clf()
 
-    plt.subplot(2,2,1)
-    plt.plot(PerceptualSpace, Priors)
+    plt.subplot(2, 2, 1)
+    plt.plot(StateSpace.states, StateSpace.priors)
     plt.ylim(ymin=0)
     plt.title('Priors')
 
-    plt.subplot(2,4,3)
+    plt.subplot(2, 4, 3)
     plt.imshow(Utility, origin='upper', interpolation='none')
     plt.title('Utility')
-    plt.subplot(2,4,4)
+    plt.subplot(2, 4, 4)
     plt.imshow(Confusion, origin='upper', interpolation='none')
     plt.title('Confusion')
 
-    plt.subplot(2,2,3)
-    for m in xrange(NSenderActions):
-        MLabel = '$m_'+str(m)+'$' if m < NMessages else '$\\bot$'
-        plt.plot(PerceptualSpace, Sender[:,m], label=MLabel)
+    plt.subplot(2, 2, 3)
+    for m in xrange(MessageSpace.size()):
+        plt.plot(StateSpace.states, Sender[:, m], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
-    plt.ylim(-0.1,1.1)
+    plt.ylim(-0.1, 1.1)
     plt.legend(loc='lower left')
     plt.title('Sender strategy')
 
-    plt.subplot(2,2,4)
-    for m in xrange(NMessages):
-        plt.plot(PerceptualSpace, Receiver[m,:], label='$m_'+str(m)+'$')
+    plt.subplot(2, 2, 4)
+    for m in xrange(MessageSpace.size()):
+        plt.plot(StateSpace.states, Receiver[m, :], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(ymin=0)
@@ -48,6 +47,7 @@ def plotStrategies(NMessages, NSenderActions, PerceptualSpace, Priors, Utility, 
 
     plt.show(block=block)
     plt.pause(0.01)
+
 
 ## Read arguments
 
@@ -59,7 +59,7 @@ args = argparser.parse_args()
 
 BatchMode = args.batch
 ConfigFile = args.configfile
-    
+
 ## Initialization
 
 cfg = yaml.load(ConfigFile)
@@ -88,11 +88,9 @@ while not converged:
     ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
                           for t in xrange(StateSpace.size()) for m in xrange(MessageSpace.size()) for x in xrange(
         StateSpace.size()))
-    print ExpectedUtility/np.sum(Utility)
+    print ExpectedUtility / np.sum(Utility)
 
-    if not BatchMode: plotStrategies(MessageSpace.size(), MessageSpace.size(), StateSpace.states, StateSpace.priors,
-                                     Utility, Confusion,
-                                     Sender, Receiver)
+    if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver)
 
     SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
 
@@ -104,9 +102,9 @@ while not converged:
         Sender = np.dot(Confusion, Sender)
 
     Sender = utils.make_row_stochastic(Sender)
-    
+
     ## Receiver strategy
-    
+
     Receiver = Dynamics.update_receiver(Sender, Receiver, StateSpace, MessageSpace, Utility)
 
     if LimitedPerception:
@@ -142,10 +140,7 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
 elif not BatchMode:
     print 'Language is NOT properly vague'
 
-if not BatchMode: plotStrategies(MessageSpace.size(), MessageSpace.size(), StateSpace.states, StateSpace.priors,
-                                 Utility, Confusion, Sender,
-                                 Receiver,
-                                 block=True)
+if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=True)
 
 # Outputting to file
 SenderOutputFilename = args.output_prefix + '-sender.csv'
