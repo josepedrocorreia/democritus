@@ -6,9 +6,9 @@ state space:
     start: 0
     end: 1
 
-message space:
+messages:
   type: set
-  messages:
+  elements:
     type: numbered
     size: 2
 

@@ -8,7 +8,7 @@ import yaml
 
 from democritus import utils
 from democritus.evolutionary_dynamics import EvolutionaryDynamicsFactory
-from democritus.message_spaces import MessageSpaceFactory
+from democritus.messages import MessagesFactory
 from democritus.state_spaces import StateSpaceFactory
 
 
@@ -66,7 +66,7 @@ cfg = yaml.load(ConfigFile)
 
 StateSpace = StateSpaceFactory.create(cfg['state space'])
 
-MessageSpace = MessageSpaceFactory.create(cfg['message space'])
+MessageSpace = MessagesFactory.create(cfg['messages'])
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
