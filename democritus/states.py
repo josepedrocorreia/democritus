@@ -50,15 +50,17 @@ class StateElementsFactory(object):
 class PriorsFactory(object):
     @staticmethod
     def create(spec, elements):
-        if 'type' not in spec:
-            raise ValueError('Missing type in priors specification: ' + str(spec))
-        if spec['type'] == 'uniform':
+        spec_type = 'uniform' if 'type' not in spec \
+            else spec['type']
+
+        if spec_type == 'uniform':
             return stats.uniform.pdf(elements, scale=len(elements))
-        elif spec['type'] == 'normal':
-            if 'mean' not in spec \
-                    or 'standard deviation' not in spec:
-                raise ValueError('Missing mean or standard deviation in priors specification: ' + str(spec))
-            return stats.norm.pdf(elements, loc=spec['mean'], scale=spec['standard deviation'])
+        elif spec_type == 'normal':
+            mean = np.mean(elements) if 'mean' not in spec \
+                else spec['mean']
+            standard_deviation = np.std(elements, ddof=1) if 'standard deviation' not in spec \
+                else spec['standard deviation']
+            return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
         else:
             raise ValueError('Unknown type in priors specification: ' + str(spec))
 
@@ -66,9 +68,10 @@ class PriorsFactory(object):
 class MetricFactory(object):
     @staticmethod
     def create(spec, elements):
-        if 'type' not in spec:
-            raise ValueError('Invalid metric specification: ' + str(spec))
-        if spec['type'] == 'euclidean':
+        spec_type = 'euclidean' if 'type' not in spec \
+            else spec['type']
+
+        if spec_type == 'euclidean':
             return np.array([[abs(x - y) for y in elements] for x in elements])
         else:
             raise ValueError('Unknown type in metric specification: ' + str(spec))

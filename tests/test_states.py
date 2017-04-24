@@ -78,8 +78,10 @@ def test_metric_factory_euclidean():
 
 
 def test_metric_factory_missing_type():
-    with pytest.raises(ValueError):
-        MetricFactory.create({}, [1, 2, 3])
+    metric_3 = MetricFactory.create({}, [1, 2, 3])
+    assert metric_3[0].tolist() == [0, 1, 2]
+    assert metric_3[1].tolist() == [1, 0, 1]
+    assert metric_3[2].tolist() == [2, 1, 0]
 
 
 def test_metric_factory_unknown_type():
@@ -107,8 +109,8 @@ def test_priors_factory_normal():
 
 
 def test_priors_factory_missing_type():
-    with pytest.raises(ValueError):
-        PriorsFactory.create({}, [1])
+    priors_3 = PriorsFactory.create({}, [1, 2, 3])
+    assert priors_3.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
 
 def test_priors_factory_unknown_type():
@@ -117,10 +119,10 @@ def test_priors_factory_unknown_type():
 
 
 def test_priors_factory_missing_mean():
-    with pytest.raises(ValueError):
-        PriorsFactory.create({'type': 'normal', 'standard deviation': 1}, [1, 2, 3, 4, 5])
+    priors = PriorsFactory.create({'type': 'normal', 'standard deviation': 1}, [1, 2, 3, 4, 5])
+    assert np.round(priors, decimals=3).tolist() == [0.054, 0.242, 0.399, 0.242, 0.054]
 
 
 def test_priors_factory_missing_standard_deviation():
-    with pytest.raises(ValueError):
-        PriorsFactory.create({'type': 'normal', 'mean': 3}, [1, 2, 3, 4, 5])
+    priors = PriorsFactory.create({'type': 'normal', 'mean': 3}, [1, 2, 3, 4, 5])
+    assert np.round(priors, decimals=3).tolist() == [0.113, 0.207, 0.252, 0.207, 0.113]
