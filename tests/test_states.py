@@ -1,6 +1,8 @@
 from __future__ import division
 
-from democritus.states import *
+import numpy as np
+
+from democritus.states import StateSet, MetricSpace, MetricFactory, PriorsFactory
 
 state_set_three_uniform = StateSet([1, 2, 3], [1 / 3, 1 / 3, 1 / 3])
 metric_space_three_uniform = MetricSpace([1, 2, 3], [1 / 3, 1 / 3, 1 / 3], [[1, 1, 1], [1, 1, 1], [1, 1, 1]])
