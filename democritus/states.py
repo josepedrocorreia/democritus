@@ -69,8 +69,8 @@ class MetricFactory(object):
 
 class StateSet(object):
     def __init__(self, elements, priors):
-        self.elements = elements
-        self.priors = priors
+        self.elements = np.array(elements)
+        self.priors = np.array(priors)
 
     def size(self):
         return len(self.elements)
@@ -79,9 +79,9 @@ class StateSet(object):
 class MetricSpace(StateSet):
     def __init__(self, elements, priors, metric):
         StateSet.__init__(self, elements, priors)
-        self.distances = metric
+        self.distances = np.array(metric)
 
-        # def distance(self, x, y):
-        #     x_index = self.elements.indexof(x)
-        #     y_index = self.elements.indexof(y)
-        #     return self.distances(x_index, y_index)
+    def distance(self, x, y):
+        x_index = self.elements.tolist().index(x)
+        y_index = self.elements.tolist().index(y)
+        return self.distances[x_index, y_index]

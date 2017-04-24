@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class MessagesFactory(object):
     @staticmethod
     def create(spec):
@@ -25,7 +28,7 @@ class MessageElementsFactory(object):
 
 class MessageSet(object):
     def __init__(self, elements):
-        self.elements = elements
+        self.elements = np.array(elements)
 
     def size(self):
         return len(self.elements)

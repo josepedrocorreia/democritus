@@ -9,7 +9,7 @@ def test_message_set_attributes():
     elements = [1, 2, 3, 4, 5]
     message_set = MessageSet(elements)
     assert hasattr(message_set, 'elements')
-    assert message_set.elements == elements
+    assert message_set.elements.tolist() == elements
 
 
 def test_message_set_size():
@@ -46,7 +46,7 @@ def test_messages_factory_five_elements():
     messages = MessagesFactory.create({'type': 'set', 'elements': {'type': 'numbered', 'size': 5}})
     assert type(messages) is MessageSet
     assert messages.size() == 5
-    assert messages.elements == [1, 2, 3, 4, 5]
+    assert messages.elements.tolist() == [1, 2, 3, 4, 5]
 
 
 def test_messages_factory_unknown_type():
