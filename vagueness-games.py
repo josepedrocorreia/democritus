@@ -9,14 +9,14 @@ import yaml
 from democritus import utils
 from democritus.evolutionary_dynamics import EvolutionaryDynamicsFactory
 from democritus.messages import MessagesFactory
-from democritus.state_spaces import StateSpaceFactory
+from democritus.states import StatesFactory
 
 
 def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=False, vline=None):
     plt.clf()
 
     plt.subplot(2, 2, 1)
-    plt.plot(StateSpace.states, StateSpace.priors)
+    plt.plot(StateSpace.elements, StateSpace.priors)
     plt.ylim(ymin=0)
     plt.title('Priors')
 
@@ -29,7 +29,7 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
 
     plt.subplot(2, 2, 3)
     for m in xrange(MessageSpace.size()):
-        plt.plot(StateSpace.states, Sender[:, m], label='$m_' + str(m + 1) + '$')
+        plt.plot(StateSpace.elements, Sender[:, m], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(-0.1, 1.1)
@@ -38,7 +38,7 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
 
     plt.subplot(2, 2, 4)
     for m in xrange(MessageSpace.size()):
-        plt.plot(StateSpace.states, Receiver[m, :], label='$m_' + str(m + 1) + '$')
+        plt.plot(StateSpace.elements, Receiver[m, :], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(ymin=0)
@@ -64,7 +64,7 @@ ConfigFile = args.configfile
 
 cfg = yaml.load(ConfigFile)
 
-StateSpace = StateSpaceFactory.create(cfg['state space'])
+StateSpace = StatesFactory.create(cfg['states'])
 
 MessageSpace = MessagesFactory.create(cfg['messages'])
 

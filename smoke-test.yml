@@ -1,6 +1,6 @@
-state space:
-  type: metric
-  states:
+states:
+  type: metric space
+  elements:
     type: interval
     size: 30
     start: 0
