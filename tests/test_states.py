@@ -1,5 +1,7 @@
 from __future__ import division
 
+import pytest
+
 from democritus.states import *
 
 
@@ -75,9 +77,19 @@ def test_metric_factory_euclidean():
     assert other_metric_3[2].tolist() == [4, 3, 0]
 
 
+def test_metric_factory_missing_type():
+    with pytest.raises(ValueError):
+        MetricFactory.create({}, [1, 2, 3])
+
+
+def test_metric_factory_unknown_type():
+    with pytest.raises(ValueError):
+        MetricFactory.create({'type': '????????'}, [1, 2, 3])
+
+
 # PriorsFactory
 
-def test_priors_creation_uniform():
+def test_priors_factory_uniform():
     priors_spec = {'type': 'uniform'}
 
     priors_1 = PriorsFactory.create(priors_spec, [1])
@@ -85,3 +97,30 @@ def test_priors_creation_uniform():
 
     priors_3 = PriorsFactory.create(priors_spec, [1, 2, 3])
     assert priors_3.tolist() == [1 / 3, 1 / 3, 1 / 3]
+
+
+def test_priors_factory_normal():
+    priors_spec = {'type': 'normal', 'mean': 3, 'standard deviation': 1}
+
+    priors_3 = PriorsFactory.create(priors_spec, [1, 2, 3, 4, 5])
+    assert np.round(priors_3, decimals=3).tolist() == [0.054, 0.242, 0.399, 0.242, 0.054]
+
+
+def test_priors_factory_missing_type():
+    with pytest.raises(ValueError):
+        PriorsFactory.create({}, [1])
+
+
+def test_priors_factory_unknown_type():
+    with pytest.raises(ValueError):
+        PriorsFactory.create({'type': '?????????'}, [1])
+
+
+def test_priors_factory_missing_mean():
+    with pytest.raises(ValueError):
+        PriorsFactory.create({'type': 'normal', 'standard deviation': 1}, [1, 2, 3, 4, 5])
+
+
+def test_priors_factory_missing_standard_deviation():
+    with pytest.raises(ValueError):
+        PriorsFactory.create({'type': 'normal', 'mean': 3}, [1, 2, 3, 4, 5])

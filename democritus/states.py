@@ -50,21 +50,28 @@ class StateElementsFactory(object):
 class PriorsFactory(object):
     @staticmethod
     def create(spec, elements):
+        if 'type' not in spec:
+            raise ValueError('Missing type in priors specification: ' + str(spec))
         if spec['type'] == 'uniform':
             return stats.uniform.pdf(elements, scale=len(elements))
         elif spec['type'] == 'normal':
+            if 'mean' not in spec \
+                    or 'standard deviation' not in spec:
+                raise ValueError('Missing mean or standard deviation in priors specification: ' + str(spec))
             return stats.norm.pdf(elements, loc=spec['mean'], scale=spec['standard deviation'])
         else:
-            raise ValueError('Invalid priors specification: ' + str(spec))
+            raise ValueError('Unknown type in priors specification: ' + str(spec))
 
 
 class MetricFactory(object):
     @staticmethod
     def create(spec, elements):
+        if 'type' not in spec:
+            raise ValueError('Invalid metric specification: ' + str(spec))
         if spec['type'] == 'euclidean':
             return np.array([[abs(x - y) for y in elements] for x in elements])
         else:
-            raise ValueError('Invalid metric specification: ' + str(spec))
+            raise ValueError('Unknown type in metric specification: ' + str(spec))
 
 
 class StateSet(object):
