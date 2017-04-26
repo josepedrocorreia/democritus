@@ -170,3 +170,96 @@ def test_state_elements_factory_unknown_type():
     elements_spec = {'type': '????????'}
     with pytest.raises(ValueError):
         StateElementsFactory.create(elements_spec)
+
+
+# StatesFactory
+
+def test_states_factory_set():
+    states_spec = {'type': 'set',
+                   'elements': {'type': 'numbered', 'size': 3},
+                   'priors': {'type': 'uniform'}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is StateSet
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+
+
+def test_states_factory_metric_space():
+    states_spec = {'type': 'metric space',
+                   'elements': {'type': 'numbered', 'size': 3},
+                   'priors': {'type': 'uniform'},
+                   'metric': {'type': 'euclidean'}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is MetricSpace
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+    assert states.distances[0].tolist() == [0, 1, 2]
+    assert states.distances[1].tolist() == [1, 0, 1]
+    assert states.distances[2].tolist() == [2, 1, 0]
+
+
+def test_states_factory_missing_type_defaults_to_set():
+    states_spec = {'elements': {'type': 'numbered', 'size': 3},
+                   'priors': {'type': 'uniform'}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is StateSet
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+
+
+def test_states_factory_set_missing_priors_default_to_uniform():
+    states_spec = {'type': 'set',
+                   'elements': {'type': 'numbered', 'size': 3}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is StateSet
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+
+
+def test_states_factory_set_missing_elements_raises_exception():
+    states_spec = {'type': 'set',
+                   'priors': {'type': 'uniform'}}
+    with pytest.raises(ValueError):
+        StatesFactory.create(states_spec)
+
+
+def test_states_factory_metric_space_missing_priors_defaults_to_uniform():
+    states_spec = {'type': 'metric space',
+                   'elements': {'type': 'numbered', 'size': 3},
+                   'metric': {'type': 'euclidean'}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is MetricSpace
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+    assert states.distances[0].tolist() == [0, 1, 2]
+    assert states.distances[1].tolist() == [1, 0, 1]
+    assert states.distances[2].tolist() == [2, 1, 0]
+
+
+def test_states_factory_metric_space_missing_metric_defaults_to_euclidean():
+    states_spec = {'type': 'metric space',
+                   'elements': {'type': 'numbered', 'size': 3},
+                   'priors': {'type': 'uniform'}}
+    states = StatesFactory.create(states_spec)
+    assert type(states) is MetricSpace
+    assert states.elements.tolist() == [1, 2, 3]
+    assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+    assert states.distances[0].tolist() == [0, 1, 2]
+    assert states.distances[1].tolist() == [1, 0, 1]
+    assert states.distances[2].tolist() == [2, 1, 0]
+
+
+def test_states_factory_metric_space_missing_elements_raises_exception():
+    states_spec = {'type': 'metric space',
+                   'priors': {'type': 'uniform'},
+                   'metric': {'type': 'euclidean'}}
+    with pytest.raises(ValueError):
+        StatesFactory.create(states_spec)
+
+
+def test_states_factory_unknown_type_raises_exception():
+    states_spec = {'type': '???????????',
+                   'elements': {'type': 'numbered', 'size': 3},
+                   'priors': {'type': 'uniform'}}
+    with pytest.raises(ValueError):
+        StatesFactory.create(states_spec)
