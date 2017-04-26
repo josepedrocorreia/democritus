@@ -77,14 +77,14 @@ def test_metric_factory_euclidean():
     assert other_metric_3[2].tolist() == [4, 3, 0]
 
 
-def test_metric_factory_missing_type():
+def test_metric_factory_missing_type_defaults_to_euclidean():
     metric_3 = MetricFactory.create({}, [1, 2, 3])
     assert metric_3[0].tolist() == [0, 1, 2]
     assert metric_3[1].tolist() == [1, 0, 1]
     assert metric_3[2].tolist() == [2, 1, 0]
 
 
-def test_metric_factory_unknown_type():
+def test_metric_factory_unknown_type_raises_exception():
     with pytest.raises(ValueError):
         MetricFactory.create({'type': '????????'}, [1, 2, 3])
 
@@ -108,22 +108,22 @@ def test_priors_factory_normal():
     assert np.round(priors_3, decimals=3).tolist() == [0.054, 0.242, 0.399, 0.242, 0.054]
 
 
-def test_priors_factory_missing_type():
+def test_priors_factory_missing_type_defaults_to_uniform():
     priors_3 = PriorsFactory.create({}, [1, 2, 3])
     assert priors_3.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
 
-def test_priors_factory_unknown_type():
+def test_priors_factory_unknown_type_raises_exception():
     with pytest.raises(ValueError):
         PriorsFactory.create({'type': '?????????'}, [1])
 
 
-def test_priors_factory_missing_mean():
+def test_priors_factory_missing_mean_defaults_to_estimate():
     priors = PriorsFactory.create({'type': 'normal', 'standard deviation': 1}, [1, 2, 3, 4, 5])
     assert np.round(priors, decimals=3).tolist() == [0.054, 0.242, 0.399, 0.242, 0.054]
 
 
-def test_priors_factory_missing_standard_deviation():
+def test_priors_factory_missing_standard_deviation_defaults_to_estimate():
     priors = PriorsFactory.create({'type': 'normal', 'mean': 3}, [1, 2, 3, 4, 5])
     assert np.round(priors, decimals=3).tolist() == [0.113, 0.207, 0.252, 0.207, 0.113]
 
@@ -142,31 +142,31 @@ def test_state_elements_factory_interval():
     assert elements.tolist() == [5, 6, 7, 8, 9]
 
 
-def test_state_elements_factory_numbered_missing_size():
+def test_state_elements_factory_numbered_missing_size_raises_exception():
     elements_spec = {'type': 'numbered'}
     with pytest.raises(ValueError):
         StateElementsFactory.create(elements_spec)
 
 
-def test_state_elements_factory_interval_missing_size():
+def test_state_elements_factory_interval_missing_size_raises_exception():
     elements_spec = {'type': 'interval', 'start': 5, 'end': 9}
     with pytest.raises(ValueError):
         StateElementsFactory.create(elements_spec)
 
 
-def test_state_elements_factory_interval_missing_start():
+def test_state_elements_factory_interval_missing_start_defaults_to_0():
     elements_spec = {'type': 'interval', 'size': 5, 'end': 4}
     elements = StateElementsFactory.create(elements_spec)
     assert elements.tolist() == [0, 1, 2, 3, 4]
 
 
-def test_state_elements_factory_interval_missing_end():
+def test_state_elements_factory_interval_missing_end_defaults_to_1():
     elements_spec = {'type': 'interval', 'size': 3, 'start': 0.5}
     elements = StateElementsFactory.create(elements_spec)
     assert elements.tolist() == [0.5, 0.75, 1]
 
 
-def test_state_elements_factory_unknown_type():
+def test_state_elements_factory_unknown_type_raises_exception():
     elements_spec = {'type': '????????'}
     with pytest.raises(ValueError):
         StateElementsFactory.create(elements_spec)

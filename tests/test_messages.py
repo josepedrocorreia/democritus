@@ -24,17 +24,17 @@ def test_message_elements_factory_five_elements():
     assert message_elements == [1, 2, 3, 4, 5]
 
 
-def test_message_elements_factory_unknown_type():
+def test_message_elements_factory_unknown_type_raises_exception():
     with pytest.raises(ValueError):
         MessageElementsFactory.create({'type': '????????', 'size': 5})
 
 
-def test_message_elements_factory_missing_type():
+def test_message_elements_factory_missing_type_defaults_to_numbered():
     message_elements = MessageElementsFactory.create({'size': 2})
     assert message_elements == [1, 2]
 
 
-def test_message_elements_factory_missing_size():
+def test_message_elements_factory_missing_size_raises_exception():
     with pytest.raises(ValueError):
         MessageElementsFactory.create({'type': 'numbered'})
 
@@ -48,16 +48,18 @@ def test_messages_factory_five_elements():
     assert messages.elements.tolist() == [1, 2, 3, 4, 5]
 
 
-def test_messages_factory_unknown_type():
+def test_messages_factory_unknown_type_raises_exception():
     with pytest.raises(ValueError):
         MessagesFactory.create({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
 
 
-def test_messages_factory_missing_type():
-    with pytest.raises(ValueError):
-        MessagesFactory.create({'elements': {'type': 'numbered', 'size': 5}})
+def test_messages_factory_missing_type_defaults_to_set():
+    messages = MessagesFactory.create({'elements': {'type': 'numbered', 'size': 5}})
+    assert type(messages) is MessageSet
+    assert messages.size() == 5
+    assert messages.elements.tolist() == [1, 2, 3, 4, 5]
 
 
-def test_messages_factory_missing_elements():
+def test_messages_factory_missing_elements_raises_exception():
     with pytest.raises(ValueError):
         MessagesFactory.create({'type': 'set'})

@@ -4,7 +4,7 @@ import numpy as np
 class MessagesFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = spec.get('type', 'numbered')
+        spec_type = spec.get('type', 'set')
         if spec_type == 'set':
             if 'elements' not in spec:
                 raise ValueError('Missing elements in messages specification: ' + str(spec))
