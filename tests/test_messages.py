@@ -21,7 +21,6 @@ def test_message_set_size():
 
 def test_message_elements_factory_five_elements():
     message_elements = MessageElementsFactory.create({'type': 'numbered', 'size': 5})
-    assert type(message_elements) is list
     assert message_elements == [1, 2, 3, 4, 5]
 
 
@@ -31,8 +30,8 @@ def test_message_elements_factory_unknown_type():
 
 
 def test_message_elements_factory_missing_type():
-    with pytest.raises(ValueError):
-        MessageElementsFactory.create({'size': 2})
+    message_elements = MessageElementsFactory.create({'size': 2})
+    assert message_elements == [1, 2]
 
 
 def test_message_elements_factory_missing_size():

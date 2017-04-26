@@ -1,48 +1,37 @@
 import numpy as np
 from scipy import stats as stats
 
-DEFAULT_PRIORS_SPEC = {'type': 'uniform'}
-DEFAULT_METRIC_SPEC = {'type': 'euclidean'}
-
 
 class StatesFactory(object):
     @staticmethod
     def create(spec):
-        if spec['type'] == 'set':
+        spec_type = spec.get('type', 'set')
+        if spec_type == 'set':
+            if 'elements' not in spec:
+                raise ValueError('Missing elements in states specification: ' + str(spec))
             elements_spec = spec['elements']
-            priors_spec = DEFAULT_PRIORS_SPEC if 'priors' not in spec else spec['priors']
-            return StateSetFactory.create(elements_spec, priors_spec)
-        if spec['type'] == 'metric space':
+            priors_spec = spec.get('priors', {})
+            elements = StateElementsFactory.create(elements_spec)
+            priors = PriorsFactory.create(priors_spec, elements)
+            return StateSet(elements, priors)
+        if spec_type == 'metric space':
+            if 'elements' not in spec:
+                raise ValueError('Missing elements in states specification: ' + str(spec))
             elements_spec = spec['elements']
-            priors_spec = DEFAULT_PRIORS_SPEC if 'priors' not in spec else spec['priors']
-            metric_spec = DEFAULT_METRIC_SPEC if 'metric' not in spec else spec['metric']
-            return MetricSpaceFactory.create(elements_spec, priors_spec, metric_spec)
+            priors_spec = spec.get('priors', {})
+            metric_spec = spec.get('metric', {})
+            elements = StateElementsFactory.create(elements_spec)
+            priors = PriorsFactory.create(priors_spec, elements)
+            metric = MetricFactory.create(metric_spec, elements)
+            return MetricSpace(elements, priors, metric)
         else:
             raise ValueError('Invalid states specification: ' + str(spec))
-
-
-class StateSetFactory(object):
-    @staticmethod
-    def create(elements_spec, priors_spec):
-        elements = StateElementsFactory.create(elements_spec)
-        priors = PriorsFactory.create(priors_spec, elements)
-        return StateSet(elements, priors)
-
-
-class MetricSpaceFactory(object):
-    @staticmethod
-    def create(elements_spec, priors_spec, metric_spec):
-        elements = StateElementsFactory.create(elements_spec)
-        priors = PriorsFactory.create(priors_spec, elements)
-        metric = MetricFactory.create(metric_spec, elements)
-        return MetricSpace(elements, priors, metric)
 
 
 class StateElementsFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = 'numbered' if 'type' not in spec \
-            else spec['type']
+        spec_type = spec.get('type', 'numbered')
         if spec_type == 'numbered':
             if 'size' not in spec:
                 raise ValueError('Missing size in state elements specification: ' + str(spec))
@@ -52,10 +41,8 @@ class StateElementsFactory(object):
             if 'size' not in spec:
                 raise ValueError('Missing size in state elements specification: ' + str(spec))
             size = spec['size']
-            start = 0 if 'start' not in spec \
-                else spec['start']
-            end = 1 if 'end' not in spec \
-                else spec['end']
+            start = spec.get('start', 0)
+            end = spec.get('end', 1)
             return np.linspace(start=start, stop=end, num=size)
         else:
             raise ValueError('Unknown type in state elements specification: ' + str(spec))
@@ -64,16 +51,12 @@ class StateElementsFactory(object):
 class PriorsFactory(object):
     @staticmethod
     def create(spec, elements):
-        spec_type = 'uniform' if 'type' not in spec \
-            else spec['type']
-
+        spec_type = spec.get('type', 'uniform')
         if spec_type == 'uniform':
             return stats.uniform.pdf(elements, scale=len(elements))
         elif spec_type == 'normal':
-            mean = np.mean(elements) if 'mean' not in spec \
-                else spec['mean']
-            standard_deviation = np.std(elements, ddof=1) if 'standard deviation' not in spec \
-                else spec['standard deviation']
+            mean = spec.get('mean', np.mean(elements))
+            standard_deviation = spec.get('standard deviation', np.std(elements, ddof=1))
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
         else:
             raise ValueError('Unknown type in priors specification: ' + str(spec))
@@ -82,9 +65,7 @@ class PriorsFactory(object):
 class MetricFactory(object):
     @staticmethod
     def create(spec, elements):
-        spec_type = 'euclidean' if 'type' not in spec \
-            else spec['type']
-
+        spec_type = spec.get('type', 'euclidean')
         if spec_type == 'euclidean':
             return np.array([[abs(x - y) for y in elements] for x in elements])
         else:
