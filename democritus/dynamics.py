@@ -3,15 +3,31 @@ import numpy as np
 from utils import make_row_stochastic
 
 
-class EvolutionaryDynamics(object):
+class DynamicsFactory(object):
+    @staticmethod
+    def create(spec):
+        dynamics_type = spec.get('type', 'replicator')
+        if dynamics_type == 'replicator':
+            return ReplicatorDynamics()
+        if dynamics_type == 'best response':
+            return BestResponseDynamics()
+        if dynamics_type == 'quantal response':
+            if 'rationality' not in spec:
+                raise ValueError('Missing rationality in dynamics spec' + str(spec))
+            return QuantalResponseDynamics(spec['rationality'])
+        else:
+            raise ValueError('Invalid dynamics specification: ' + str(spec))
+
+
+class Dynamics(object):
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        raise NotImplementedError('Subclasses of EvolutionaryDynamics must implement update_sender method')
+        raise NotImplementedError('Subclasses of Dynamics must implement update_sender method')
 
     def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        raise NotImplementedError('Subclasses of EvolutionaryDynamics must implement update_receiver method')
+        raise NotImplementedError('Subclasses of Dynamics must implement update_receiver method')
 
 
-class ReplicatorDynamics(EvolutionaryDynamics):
+class ReplicatorDynamics(Dynamics):
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
         n_states = state_space.size()
         n_messages = message_space.size()
@@ -39,7 +55,7 @@ class ReplicatorDynamics(EvolutionaryDynamics):
         return make_row_stochastic(new_receiver_strategy)
 
 
-class BestResponseDynamics(EvolutionaryDynamics):
+class BestResponseDynamics(Dynamics):
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
         n_states = state_space.size()
         n_messages = message_space.size()
@@ -65,9 +81,9 @@ class BestResponseDynamics(EvolutionaryDynamics):
         return make_row_stochastic(new_receiver_strategy)
 
 
-class QuantalResponseDynamics(EvolutionaryDynamics):
-    def __init__(self, spec):
-        self.rationality = spec['rationality']
+class QuantalResponseDynamics(Dynamics):
+    def __init__(self, rationality):
+        self.rationality = rationality
 
     def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
         n_states = state_space.size()
@@ -94,17 +110,3 @@ class QuantalResponseDynamics(EvolutionaryDynamics):
                 new_receiver_strategy[m, t] = np.exp(self.rationality * expected_utility[m, t]) / \
                                               sum(np.exp(self.rationality * expected_utility[m]))
         return make_row_stochastic(new_receiver_strategy)
-
-
-class EvolutionaryDynamicsFactory(object):
-    @staticmethod
-    def create(spec):
-        dynamics_type = spec['type']
-        if dynamics_type == 'replicator':
-            return ReplicatorDynamics()
-        if dynamics_type == 'best response':
-            return BestResponseDynamics()
-        if dynamics_type == 'quantal response':
-            return QuantalResponseDynamics(spec)
-        # type is unknown
-        raise ValueError('Invalid evolutionary dynamics specification: ' + str(spec))

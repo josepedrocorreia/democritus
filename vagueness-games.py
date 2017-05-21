@@ -7,7 +7,7 @@ import time
 import yaml
 
 from democritus import utils
-from democritus.evolutionary_dynamics import EvolutionaryDynamicsFactory
+from democritus.dynamics import DynamicsFactory
 from democritus.messages import MessagesFactory
 from democritus.states import StatesFactory
 
@@ -71,7 +71,7 @@ MessageSpace = MessagesFactory.create(cfg['messages'])
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
 
-Dynamics = EvolutionaryDynamicsFactory.create(cfg['dynamics'])
+Dynamics = DynamicsFactory.create(cfg['dynamics'])
 
 Similarity = np.exp(-(StateSpace.distances ** 2 / (1.0 / Acuity) ** 2))
 
