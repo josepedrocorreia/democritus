@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import stats as stats
 
+from democritus.elements import ElementsFactory
+
 
 class StatesFactory(object):
     @staticmethod
@@ -11,7 +13,7 @@ class StatesFactory(object):
                 raise ValueError('Missing elements in states specification: ' + str(spec))
             elements_spec = spec['elements']
             priors_spec = spec.get('priors', {})
-            elements = StateElementsFactory.create(elements_spec)
+            elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             return StateSet(elements, priors)
         if spec_type == 'metric space':
@@ -20,32 +22,12 @@ class StatesFactory(object):
             elements_spec = spec['elements']
             priors_spec = spec.get('priors', {})
             metric_spec = spec.get('metric', {})
-            elements = StateElementsFactory.create(elements_spec)
+            elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)
             return MetricSpace(elements, priors, metric)
         else:
             raise ValueError('Invalid states specification: ' + str(spec))
-
-
-class StateElementsFactory(object):
-    @staticmethod
-    def create(spec):
-        spec_type = spec.get('type', 'numbered')
-        if spec_type == 'numbered':
-            if 'size' not in spec:
-                raise ValueError('Missing size in state elements specification: ' + str(spec))
-            size = spec['size']
-            return range(1, size + 1)
-        elif spec_type == 'interval':
-            if 'size' not in spec:
-                raise ValueError('Missing size in state elements specification: ' + str(spec))
-            size = spec['size']
-            start = spec.get('start', 0)
-            end = spec.get('end', 1)
-            return np.linspace(start=start, stop=end, num=size)
-        else:
-            raise ValueError('Unknown type in state elements specification: ' + str(spec))
 
 
 class PriorsFactory(object):

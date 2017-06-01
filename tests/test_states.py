@@ -128,50 +128,6 @@ def test_priors_factory_missing_standard_deviation_defaults_to_estimate():
     assert np.round(priors, decimals=3).tolist() == [0.113, 0.207, 0.252, 0.207, 0.113]
 
 
-# StateElementsFactory
-
-def test_state_elements_factory_numbered():
-    elements_spec = {'type': 'numbered', 'size': 5}
-    elements = StateElementsFactory.create(elements_spec)
-    assert elements == [1, 2, 3, 4, 5]
-
-
-def test_state_elements_factory_interval():
-    elements_spec = {'type': 'interval', 'size': 5, 'start': 5, 'end': 9}
-    elements = StateElementsFactory.create(elements_spec)
-    assert elements.tolist() == [5, 6, 7, 8, 9]
-
-
-def test_state_elements_factory_numbered_missing_size_raises_exception():
-    elements_spec = {'type': 'numbered'}
-    with pytest.raises(ValueError):
-        StateElementsFactory.create(elements_spec)
-
-
-def test_state_elements_factory_interval_missing_size_raises_exception():
-    elements_spec = {'type': 'interval', 'start': 5, 'end': 9}
-    with pytest.raises(ValueError):
-        StateElementsFactory.create(elements_spec)
-
-
-def test_state_elements_factory_interval_missing_start_defaults_to_0():
-    elements_spec = {'type': 'interval', 'size': 5, 'end': 4}
-    elements = StateElementsFactory.create(elements_spec)
-    assert elements.tolist() == [0, 1, 2, 3, 4]
-
-
-def test_state_elements_factory_interval_missing_end_defaults_to_1():
-    elements_spec = {'type': 'interval', 'size': 3, 'start': 0.5}
-    elements = StateElementsFactory.create(elements_spec)
-    assert elements.tolist() == [0.5, 0.75, 1]
-
-
-def test_state_elements_factory_unknown_type_raises_exception():
-    elements_spec = {'type': '????????'}
-    with pytest.raises(ValueError):
-        StateElementsFactory.create(elements_spec)
-
-
 # StatesFactory
 
 def test_states_factory_set():

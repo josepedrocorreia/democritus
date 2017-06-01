@@ -17,28 +17,6 @@ def test_message_set_size():
     assert message_set.size() == 5
 
 
-# MessageElementsFactory
-
-def test_message_elements_factory_five_elements():
-    message_elements = MessageElementsFactory.create({'type': 'numbered', 'size': 5})
-    assert message_elements == [1, 2, 3, 4, 5]
-
-
-def test_message_elements_factory_unknown_type_raises_exception():
-    with pytest.raises(ValueError):
-        MessageElementsFactory.create({'type': '????????', 'size': 5})
-
-
-def test_message_elements_factory_missing_type_defaults_to_numbered():
-    message_elements = MessageElementsFactory.create({'size': 2})
-    assert message_elements == [1, 2]
-
-
-def test_message_elements_factory_missing_size_raises_exception():
-    with pytest.raises(ValueError):
-        MessageElementsFactory.create({'type': 'numbered'})
-
-
 # MessagesFactory
 
 def test_messages_factory_five_elements():
