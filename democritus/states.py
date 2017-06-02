@@ -2,6 +2,7 @@ import numpy as np
 from scipy import stats as stats
 
 from democritus.elements import ElementsFactory
+from democritus.exceptions import *
 
 
 class StatesFactory(object):
@@ -10,7 +11,7 @@ class StatesFactory(object):
         spec_type = spec.get('type', 'set')
         if spec_type == 'set':
             if 'elements' not in spec:
-                raise ValueError('Missing elements in states specification: ' + str(spec))
+                raise MissingFieldInSpecification(spec, 'elements')
             elements_spec = spec['elements']
             priors_spec = spec.get('priors', {})
             elements = ElementsFactory.create(elements_spec)
@@ -18,7 +19,7 @@ class StatesFactory(object):
             return StateSet(elements, priors)
         if spec_type == 'metric space':
             if 'elements' not in spec:
-                raise ValueError('Missing elements in states specification: ' + str(spec))
+                raise MissingFieldInSpecification(spec, 'elements')
             elements_spec = spec['elements']
             priors_spec = spec.get('priors', {})
             metric_spec = spec.get('metric', {})
@@ -27,7 +28,7 @@ class StatesFactory(object):
             metric = MetricFactory.create(metric_spec, elements)
             return MetricSpace(elements, priors, metric)
         else:
-            raise ValueError('Invalid states specification: ' + str(spec))
+            raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
 class PriorsFactory(object):
@@ -41,7 +42,7 @@ class PriorsFactory(object):
             standard_deviation = spec.get('standard deviation', np.std(elements, ddof=1))
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
         else:
-            raise ValueError('Unknown type in priors specification: ' + str(spec))
+            raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
 class MetricFactory(object):
@@ -51,7 +52,7 @@ class MetricFactory(object):
         if spec_type == 'euclidean':
             return np.array([[abs(x - y) for y in elements] for x in elements])
         else:
-            raise ValueError('Unknown type in metric specification: ' + str(spec))
+            raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
 class StateSet(object):

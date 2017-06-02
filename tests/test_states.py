@@ -2,6 +2,7 @@ from __future__ import division
 
 import pytest
 
+from democritus.exceptions import *
 from democritus.states import *
 
 
@@ -85,7 +86,7 @@ def test_metric_factory_missing_type_defaults_to_euclidean():
 
 
 def test_metric_factory_unknown_type_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         MetricFactory.create({'type': '????????'}, [1, 2, 3])
 
 
@@ -114,7 +115,7 @@ def test_priors_factory_missing_type_defaults_to_uniform():
 
 
 def test_priors_factory_unknown_type_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         PriorsFactory.create({'type': '?????????'}, [1])
 
 
@@ -175,7 +176,7 @@ def test_states_factory_set_missing_priors_default_to_uniform():
 def test_states_factory_set_missing_elements_raises_exception():
     states_spec = {'type': 'set',
                    'priors': {'type': 'uniform'}}
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         StatesFactory.create(states_spec)
 
 
@@ -209,7 +210,7 @@ def test_states_factory_metric_space_missing_elements_raises_exception():
     states_spec = {'type': 'metric space',
                    'priors': {'type': 'uniform'},
                    'metric': {'type': 'euclidean'}}
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         StatesFactory.create(states_spec)
 
 
@@ -217,5 +218,5 @@ def test_states_factory_unknown_type_raises_exception():
     states_spec = {'type': '???????????',
                    'elements': {'type': 'numbered', 'size': 3},
                    'priors': {'type': 'uniform'}}
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         StatesFactory.create(states_spec)

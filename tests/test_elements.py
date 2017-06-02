@@ -1,6 +1,7 @@
 import pytest
 
 from democritus.elements import *
+from democritus.exceptions import *
 
 
 def test_elements_factory_missing_type_defaults_to_numbered():
@@ -22,13 +23,13 @@ def test_elements_factory_interval():
 
 def test_elements_factory_numbered_missing_size_raises_exception():
     elements_spec = {'type': 'numbered'}
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         ElementsFactory.create(elements_spec)
 
 
 def test_elements_factory_interval_missing_size_raises_exception():
     elements_spec = {'type': 'interval', 'start': 5, 'end': 9}
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         ElementsFactory.create(elements_spec)
 
 
@@ -46,5 +47,5 @@ def test_elements_factory_interval_missing_end_defaults_to_1():
 
 def test_elements_factory_unknown_type_raises_exception():
     elements_spec = {'type': '????????'}
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         ElementsFactory.create(elements_spec)

@@ -1,5 +1,6 @@
 import numpy as np
 
+from democritus.exceptions import *
 from utils import make_row_stochastic
 
 
@@ -13,10 +14,10 @@ class DynamicsFactory(object):
             return BestResponseDynamics()
         if dynamics_type == 'quantal response':
             if 'rationality' not in spec:
-                raise ValueError('Missing rationality in dynamics spec' + str(spec))
+                raise MissingFieldInSpecification(spec, 'rationality')
             return QuantalResponseDynamics(spec['rationality'])
         else:
-            raise ValueError('Invalid dynamics specification: ' + str(spec))
+            raise InvalidValueInSpecification(spec, 'type', dynamics_type)
 
 
 class Dynamics(object):

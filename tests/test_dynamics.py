@@ -1,11 +1,12 @@
 import pytest
 
 from democritus.dynamics import *
-
-# Dynamics
+from democritus.exceptions import *
 from democritus.messages import MessageSet
 from democritus.states import *
 
+
+# Dynamics
 
 def test_dynamics_update_sender():
     dynamics = Dynamics()
@@ -33,12 +34,12 @@ def test_dynamics_factory_missing_type_defaults_to_replicator():
 
 
 def test_dynamics_factory_unknown_type_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         DynamicsFactory.create({'type': '???????'})
 
 
 def test_dynamics_factory_quantal_response_missing_rationality_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         DynamicsFactory.create({'type': 'quantal response'})
 
 

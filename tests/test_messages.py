@@ -27,7 +27,7 @@ def test_messages_factory_five_elements():
 
 
 def test_messages_factory_unknown_type_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueInSpecification):
         MessagesFactory.create({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
 
 
@@ -39,5 +39,5 @@ def test_messages_factory_missing_type_defaults_to_set():
 
 
 def test_messages_factory_missing_elements_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(MissingFieldInSpecification):
         MessagesFactory.create({'type': 'set'})
