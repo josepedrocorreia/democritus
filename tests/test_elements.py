@@ -6,13 +6,13 @@ from democritus.exceptions import *
 
 def test_elements_factory_missing_type_defaults_to_numbered():
     elements = ElementsFactory.create({'size': 2})
-    assert elements == [1, 2]
+    assert elements.tolist() == [1, 2]
 
 
 def test_elements_factory_numbered():
     elements_spec = {'type': 'numbered', 'size': 5}
     elements = ElementsFactory.create(elements_spec)
-    assert elements == [1, 2, 3, 4, 5]
+    assert elements.tolist() == [1, 2, 3, 4, 5]
 
 
 def test_elements_factory_interval():

@@ -1,9 +1,10 @@
 import argparse
 import copy
+import time
+from builtins import range
+
 import matplotlib.pyplot as plt
 import numpy as np
-import time
-
 import yaml
 
 from democritus import utils
@@ -28,7 +29,7 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
     plt.title('Confusion')
 
     plt.subplot(2, 2, 3)
-    for m in xrange(MessageSpace.size()):
+    for m in range(MessageSpace.size()):
         plt.plot(StateSpace.elements, Sender[:, m], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
@@ -37,7 +38,7 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
     plt.title('Sender strategy')
 
     plt.subplot(2, 2, 4)
-    for m in xrange(MessageSpace.size()):
+    for m in range(MessageSpace.size()):
         plt.plot(StateSpace.elements, Receiver[m, :], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
@@ -53,12 +54,12 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--batch', action='store_true')
-argparser.add_argument('configfile', type=file)
+argparser.add_argument('configfile')
 argparser.add_argument('--output-prefix', default=time.strftime('%Y%m%d-%H%M%S'))
 args = argparser.parse_args()
 
 BatchMode = args.batch
-ConfigFile = args.configfile
+ConfigFile = open(args.configfile, 'r')
 
 ## Initialization
 
@@ -86,9 +87,9 @@ converged = False
 while not converged:
 
     ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
-                          for t in xrange(StateSpace.size()) for m in xrange(MessageSpace.size()) for x in xrange(
+                          for t in range(StateSpace.size()) for m in range(MessageSpace.size()) for x in range(
         StateSpace.size()))
-    print ExpectedUtility / np.sum(Utility)
+    print(ExpectedUtility / np.sum(Utility))
 
     if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver)
 
@@ -114,31 +115,31 @@ while not converged:
 
     if np.sum(abs(Sender - SenderBefore)) < 0.01 and np.sum(abs(Receiver - ReceiverBefore)) < 0.01:
         converged = True
-        if not BatchMode: print 'Language converged!'
+        if not BatchMode: print('Language converged!')
 
-MaximalElements = [np.where(Receiver[m] == Receiver[m].max())[0] for m in xrange(MessageSpace.size())]
-Criterion1 = all(len(MaximalElements[m]) == 1 for m in xrange(MessageSpace.size()))
+MaximalElements = [np.where(Receiver[m] == Receiver[m].max())[0] for m in range(MessageSpace.size())]
+Criterion1 = all(len(MaximalElements[m]) == 1 for m in range(MessageSpace.size()))
 
-Prototype = [np.argmax(Receiver[m]) for m in xrange(MessageSpace.size())]
+Prototype = [np.argmax(Receiver[m]) for m in range(MessageSpace.size())]
 CriterionX = all(
-    Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in xrange(MessageSpace.size()) for m2 in xrange(
+    Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in range(MessageSpace.size()) for m2 in range(
         MessageSpace.size()))
 
 # precision issues, otherwise Receiver[m,t1] > Receiver[m,t2]
-Criterion2 = all(all(Receiver[m, t1] > Receiver[m, t2] or Receiver[m, t2] - Receiver[m, t1] < 0.01 for t1 in xrange(
-    StateSpace.size()) for t2 in xrange(StateSpace.size()) if
-                     Similarity[t1, Prototype[m]] > Similarity[t2, Prototype[m]]) for m in xrange(MessageSpace.size()))
+Criterion2 = all(all(Receiver[m, t1] > Receiver[m, t2] or Receiver[m, t2] - Receiver[m, t1] < 0.01 for t1 in range(
+    StateSpace.size()) for t2 in range(StateSpace.size()) if
+                     Similarity[t1, Prototype[m]] > Similarity[t2, Prototype[m]]) for m in range(MessageSpace.size()))
 
 Criterion3 = all(all(
-    Sender[t, m1] > Sender[t, m2] or Sender[t, m2] - Sender[t, m1] < 0.01 for m1 in xrange(MessageSpace.size()) for m2
+    Sender[t, m1] > Sender[t, m2] or Sender[t, m2] - Sender[t, m1] < 0.01 for m1 in range(MessageSpace.size()) for m2
     in
-    xrange(MessageSpace.size()) if Similarity[t, Prototype[m1]] > Similarity[t, Prototype[m2]]) for t in xrange(
+    range(MessageSpace.size()) if Similarity[t, Prototype[m1]] > Similarity[t, Prototype[m2]]) for t in range(
     StateSpace.size()))
 
 if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
-    print 'Language is proper vague language'
+    print('Language is proper vague language')
 elif not BatchMode:
-    print 'Language is NOT properly vague'
+    print('Language is NOT properly vague')
 
 if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=True)
 

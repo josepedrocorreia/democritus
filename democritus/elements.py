@@ -11,7 +11,7 @@ class ElementsFactory(object):
             if 'size' not in spec:
                 raise MissingFieldInSpecification(spec, 'size')
             size = spec['size']
-            return range(1, size + 1)
+            return np.arange(1, size + 1)
         elif spec_type == 'interval':
             if 'size' not in spec:
                 raise MissingFieldInSpecification(spec, 'size')

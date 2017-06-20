@@ -1,7 +1,9 @@
+from builtins import range
+
 import numpy as np
 
 from democritus.exceptions import *
-from utils import make_row_stochastic
+from democritus.utils import make_row_stochastic
 
 
 class DynamicsFactory(object):
@@ -33,10 +35,10 @@ class ReplicatorDynamics(Dynamics):
         n_states = state_space.size()
         n_messages = message_space.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
+            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
-        for t in xrange(n_states):
-            for m in xrange(n_messages):
+        for t in range(n_states):
+            for m in range(n_messages):
                 new_sender_strategy[t, m] = sender_strategy[t, m] * \
                                             expected_utility[t, m] * n_messages / sum(expected_utility[t])
         return make_row_stochastic(new_sender_strategy)
@@ -46,11 +48,11 @@ class ReplicatorDynamics(Dynamics):
         n_messages = message_space.size()
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
-              for t in xrange(n_states)]
-             for m in xrange(n_messages)])
+              for t in range(n_states)]
+             for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
-        for m in xrange(n_messages):
-            for t in xrange(n_states):
+        for m in range(n_messages):
+            for t in range(n_states):
                 new_receiver_strategy[m, t] = receiver_strategy[m, t] * \
                                               (expected_utility[m, t] * n_states + 0) / (sum(expected_utility[m]) + 0)
         return make_row_stochastic(new_receiver_strategy)
@@ -61,10 +63,10 @@ class BestResponseDynamics(Dynamics):
         n_states = state_space.size()
         n_messages = message_space.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
+            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
-        for t in xrange(n_states):
-            for m in xrange(n_messages):
+        for t in range(n_states):
+            for m in range(n_messages):
                 new_sender_strategy[t, m] = 1 if expected_utility[t, m] == max(expected_utility[t]) else 0
         return make_row_stochastic(new_sender_strategy)
 
@@ -73,11 +75,11 @@ class BestResponseDynamics(Dynamics):
         n_messages = message_space.size()
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
-              for t in xrange(n_states)]
-             for m in xrange(n_messages)])
+              for t in range(n_states)]
+             for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
-        for m in xrange(n_messages):
-            for t in xrange(n_states):
+        for m in range(n_messages):
+            for t in range(n_states):
                 new_receiver_strategy[m, t] = 1 if expected_utility[m, t] == max(expected_utility[m]) else 0
         return make_row_stochastic(new_receiver_strategy)
 
@@ -90,10 +92,10 @@ class QuantalResponseDynamics(Dynamics):
         n_states = state_space.size()
         n_messages = message_space.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in xrange(n_messages)] for t in xrange(n_states)])
+            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
-        for t in xrange(n_states):
-            for m in xrange(n_messages):
+        for t in range(n_states):
+            for m in range(n_messages):
                 new_sender_strategy[t, m] = np.exp(self.rationality * expected_utility[t, m]) / \
                                             sum(np.exp(self.rationality * expected_utility[t]))
         return make_row_stochastic(new_sender_strategy)
@@ -103,11 +105,11 @@ class QuantalResponseDynamics(Dynamics):
         n_messages = message_space.size()
         expected_utility = np.array(
             [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
-              for t in xrange(n_states)]
-             for m in xrange(n_messages)])
+              for t in range(n_states)]
+             for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
-        for m in xrange(n_messages):
-            for t in xrange(n_states):
+        for m in range(n_messages):
+            for t in range(n_states):
                 new_receiver_strategy[m, t] = np.exp(self.rationality * expected_utility[m, t]) / \
                                               sum(np.exp(self.rationality * expected_utility[m]))
         return make_row_stochastic(new_receiver_strategy)
