@@ -2,27 +2,23 @@ import numpy as np
 from scipy import stats as stats
 
 from democritus.elements import ElementsFactory
-from democritus.exceptions import *
+from democritus.exceptions import InvalidValueInSpecification
 
 
 class StatesFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = spec.get('type', 'set')
+        spec_type = spec.get('type') or 'set'
         if spec_type == 'set':
-            if 'elements' not in spec:
-                raise MissingFieldInSpecification(spec, 'elements')
-            elements_spec = spec['elements']
-            priors_spec = spec.get('priors', {})
+            elements_spec = spec.get_or_fail('elements')
+            priors_spec = spec.get('priors') or {}
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             return StateSet(elements, priors)
         if spec_type == 'metric space':
-            if 'elements' not in spec:
-                raise MissingFieldInSpecification(spec, 'elements')
-            elements_spec = spec['elements']
-            priors_spec = spec.get('priors', {})
-            metric_spec = spec.get('metric', {})
+            elements_spec = spec.get_or_fail('elements')
+            priors_spec = spec.get('priors') or {}
+            metric_spec = spec.get('metric') or {}
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)
@@ -34,12 +30,12 @@ class StatesFactory(object):
 class PriorsFactory(object):
     @staticmethod
     def create(spec, elements):
-        spec_type = spec.get('type', 'uniform')
+        spec_type = spec.get('type') or 'uniform'
         if spec_type == 'uniform':
             return stats.uniform.pdf(elements, scale=len(elements))
         elif spec_type == 'normal':
-            mean = spec.get('mean', np.mean(elements))
-            standard_deviation = spec.get('standard deviation', np.std(elements, ddof=1))
+            mean = spec.get('mean') or np.mean(elements)
+            standard_deviation = spec.get('standard deviation') or np.std(elements, ddof=1)
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
@@ -48,7 +44,7 @@ class PriorsFactory(object):
 class MetricFactory(object):
     @staticmethod
     def create(spec, elements):
-        spec_type = spec.get('type', 'euclidean')
+        spec_type = spec.get('type') or 'euclidean'
         if spec_type == 'euclidean':
             return np.array([[abs(x - y) for y in elements] for x in elements])
         else:

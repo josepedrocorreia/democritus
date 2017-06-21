@@ -1,8 +1,9 @@
 import pytest
 
 from democritus.dynamics import *
-from democritus.exceptions import *
+from democritus.exceptions import MissingFieldInSpecification
 from democritus.messages import MessageSet
+from democritus.specification import Specification
 from democritus.states import *
 
 
@@ -23,24 +24,32 @@ def test_dynamics_update_receiver():
 # DynamicsFactory
 
 def test_dynamics_factory_types():
-    assert type(DynamicsFactory.create({'type': 'replicator'})) is ReplicatorDynamics
-    assert type(DynamicsFactory.create({'type': 'best response'})) is BestResponseDynamics
-    assert type(DynamicsFactory.create({'type': 'quantal response', 'rationality': 10})) is QuantalResponseDynamics
+    dynamics_spec = Specification.from_dict({'type': 'replicator'})
+    assert type(DynamicsFactory.create(dynamics_spec)) is ReplicatorDynamics
+
+    dynamics_spec = Specification.from_dict({'type': 'best response'})
+    assert type(DynamicsFactory.create(dynamics_spec)) is BestResponseDynamics
+
+    dynamics_spec = Specification.from_dict({'type': 'quantal response', 'rationality': 10})
+    assert type(DynamicsFactory.create(dynamics_spec)) is QuantalResponseDynamics
 
 
 def test_dynamics_factory_missing_type_defaults_to_replicator():
-    dynamics = DynamicsFactory.create({})
+    dynamics_spec = Specification.from_dict({})
+    dynamics = DynamicsFactory.create(dynamics_spec)
     assert type(dynamics) is ReplicatorDynamics
 
 
 def test_dynamics_factory_unknown_type_raises_exception():
+    dynamics_spec = Specification.from_dict({'type': '???????'})
     with pytest.raises(InvalidValueInSpecification):
-        DynamicsFactory.create({'type': '???????'})
+        DynamicsFactory.create(dynamics_spec)
 
 
 def test_dynamics_factory_quantal_response_missing_rationality_raises_exception():
+    dynamics_spec = Specification.from_dict({'type': 'quantal response'})
     with pytest.raises(MissingFieldInSpecification):
-        DynamicsFactory.create({'type': 'quantal response'})
+        DynamicsFactory.create(dynamics_spec)
 
 
 # ReplicatorDynamics

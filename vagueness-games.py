@@ -10,6 +10,7 @@ import yaml
 from democritus import utils
 from democritus.dynamics import DynamicsFactory
 from democritus.messages import MessagesFactory
+from democritus.specification import Specification
 from democritus.states import StatesFactory
 
 
@@ -63,7 +64,7 @@ ConfigFile = open(args.configfile, 'r')
 
 ## Initialization
 
-cfg = yaml.load(ConfigFile)
+cfg = Specification.from_dict(yaml.load(ConfigFile))
 
 StateSpace = StatesFactory.create(cfg['states'])
 

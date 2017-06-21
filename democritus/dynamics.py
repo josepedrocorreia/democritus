@@ -2,22 +2,21 @@ from builtins import range
 
 import numpy as np
 
-from democritus.exceptions import *
+from democritus.exceptions import InvalidValueInSpecification
 from democritus.utils import make_row_stochastic
 
 
 class DynamicsFactory(object):
     @staticmethod
     def create(spec):
-        dynamics_type = spec.get('type', 'replicator')
+        dynamics_type = spec.get('type') or 'replicator'
         if dynamics_type == 'replicator':
             return ReplicatorDynamics()
         if dynamics_type == 'best response':
             return BestResponseDynamics()
         if dynamics_type == 'quantal response':
-            if 'rationality' not in spec:
-                raise MissingFieldInSpecification(spec, 'rationality')
-            return QuantalResponseDynamics(spec['rationality'])
+            rationality_spec = spec.get_or_fail('rationality')
+            return QuantalResponseDynamics(rationality_spec)
         else:
             raise InvalidValueInSpecification(spec, 'type', dynamics_type)
 

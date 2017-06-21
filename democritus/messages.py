@@ -1,17 +1,16 @@
 import numpy as np
 
 from democritus.elements import ElementsFactory
-from democritus.exceptions import *
+from democritus.exceptions import InvalidValueInSpecification
 
 
 class MessagesFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = spec.get('type', 'set')
+        spec_type = spec.get('type') or 'set'
         if spec_type == 'set':
-            if 'elements' not in spec:
-                raise MissingFieldInSpecification(spec, 'elements')
-            elements = ElementsFactory.create(spec['elements'])
+            elements_spec = spec.get_or_fail('elements')
+            elements = ElementsFactory.create(elements_spec)
             return MessageSet(elements)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
