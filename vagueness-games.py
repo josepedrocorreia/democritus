@@ -9,9 +9,8 @@ import yaml
 
 from democritus import utils
 from democritus.dynamics import DynamicsFactory
-from democritus.messages import MessagesFactory
+from democritus.game import GameFactory
 from democritus.specification import Specification
-from democritus.states import StatesFactory
 
 
 def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=False, vline=None):
@@ -66,9 +65,9 @@ ConfigFile = open(args.configfile, 'r')
 
 cfg = Specification.from_dict(yaml.load(ConfigFile))
 
-StateSpace = StatesFactory.create(cfg['states'])
-
-MessageSpace = MessagesFactory.create(cfg['messages'])
+Game = GameFactory.create(cfg['game'])
+StateSpace = Game.states
+MessageSpace = Game.messages
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']

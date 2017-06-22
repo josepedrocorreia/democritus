@@ -1,16 +1,19 @@
-states:
-  type: metric space
-  elements:
-    type: interval
-    size: 30
-    start: 0
-    end: 1
+game:
+  type: sim-max
 
-messages:
-  type: set
-  elements:
-    type: numbered
-    size: 2
+  states:
+    type: metric space
+    elements:
+      type: interval
+      size: 30
+      start: 0
+      end: 1
+
+  messages:
+    type: set
+    elements:
+      type: numbered
+      size: 2
 
 perception:
   limited: true

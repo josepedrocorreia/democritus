@@ -3,6 +3,7 @@ from scipy import stats as stats
 
 from democritus.elements import ElementsFactory
 from democritus.exceptions import InvalidValueInSpecification
+from democritus.specification import Specification
 
 
 class StatesFactory(object):
@@ -11,14 +12,14 @@ class StatesFactory(object):
         spec_type = spec.get('type') or 'set'
         if spec_type == 'set':
             elements_spec = spec.get_or_fail('elements')
-            priors_spec = spec.get('priors') or {}
+            priors_spec = spec.get('priors') or Specification.from_dict({})
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             return StateSet(elements, priors)
         if spec_type == 'metric space':
             elements_spec = spec.get_or_fail('elements')
-            priors_spec = spec.get('priors') or {}
-            metric_spec = spec.get('metric') or {}
+            priors_spec = spec.get('priors') or Specification.from_dict({})
+            metric_spec = spec.get('metric') or Specification.from_dict({})
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)
