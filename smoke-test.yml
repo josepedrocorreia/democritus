@@ -19,6 +19,10 @@ game:
     type: nosofsky
     decay: 0.1
 
+  similarity:
+    type: nosofsky
+    decay: 0.1
+
 perception:
   limited: true
   acuity: 10

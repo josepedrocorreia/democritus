@@ -24,7 +24,7 @@ def plotStrategies(game, Confusion, Sender, Receiver, block=False, vline=None):
     plt.title('Priors')
 
     plt.subplot(2, 4, 3)
-    plt.imshow(game.utility.utilities, origin='upper', interpolation='none')
+    plt.imshow(game.utility, origin='upper', interpolation='none')
     plt.title('Utility')
     plt.subplot(2, 4, 4)
     plt.imshow(Confusion, origin='upper', interpolation='none')
@@ -71,13 +71,12 @@ game = GameFactory.create(cfg['game'])
 StateSpace = game.states
 MessageSpace = game.messages
 Utility = game.utility
+Similarity = game.similarity
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
 
 Dynamics = DynamicsFactory.create(cfg['dynamics'])
-
-Similarity = np.exp(-(StateSpace.distances ** 2 / (1.0 / Acuity) ** 2))
 
 Confusion = Similarity
 
@@ -87,10 +86,10 @@ Receiver = utils.make_row_stochastic(np.random.random((MessageSpace.size(), Stat
 converged = False
 while not converged:
 
-    ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility.utilities[t, x]
+    ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
                           for t in range(StateSpace.size()) for m in range(MessageSpace.size()) for x in range(
         StateSpace.size()))
-    print(ExpectedUtility / np.sum(Utility.utilities))
+    print(ExpectedUtility / np.sum(Utility))
 
     if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver)
 

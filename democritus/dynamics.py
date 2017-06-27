@@ -36,7 +36,7 @@ class ReplicatorDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+            [[np.dot(receiver_strategy[m], game.utility[t]) for m in range(n_messages)] for t in
              range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
@@ -49,7 +49,7 @@ class ReplicatorDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
@@ -65,7 +65,7 @@ class BestResponseDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+            [[np.dot(receiver_strategy[m], game.utility[t]) for m in range(n_messages)] for t in
              range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
@@ -77,7 +77,7 @@ class BestResponseDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
@@ -95,7 +95,7 @@ class QuantalResponseDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+            [[np.dot(receiver_strategy[m], game.utility[t]) for m in range(n_messages)] for t in
              range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
@@ -108,7 +108,7 @@ class QuantalResponseDynamics(Dynamics):
         n_states = game.states.size()
         n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))

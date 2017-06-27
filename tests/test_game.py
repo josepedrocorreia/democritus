@@ -46,3 +46,11 @@ def test_game_factory_unknown_type_raises_exception():
                                          'messages': {'elements': {'type': 'numbered', 'size': 5}}})
     with pytest.raises(InvalidValueInSpecification):
         GameFactory.create(game_spec)
+
+
+def test_similarity_function_reader_nosofsky_without_distance_raises_exception():
+    states_spec_set = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 3}})
+    states_set = StatesFactory.create(states_spec_set)
+    similarity_spec = Specification.from_dict({'type': 'nosofsky', 'decay': 2})
+    with pytest.raises(IncompatibilityInSpecification):
+        SimilarityFunctionReader.create(similarity_spec, states_set)
