@@ -21,11 +21,9 @@ game:
 
   similarity:
     type: nosofsky
-    decay: 0.1
+    decay: 0.2
 
-perception:
-  limited: true
-  acuity: 10
+  imprecise: true
 
 dynamics:
   type: best response

@@ -58,7 +58,7 @@ states = StateSet(['t1', 't2'], [0.6, 0.4])
 messages = MessageSet(['m1', 'm2'])
 similarity = [[2, 0], [0, 1]]
 utility = similarity
-game = SimMaxGame(states, messages, utility, similarity)
+game = SimMaxGame(states, messages, utility, similarity, False)
 
 
 def test_replicator_dynamics_update_sender():

@@ -15,7 +15,7 @@ from democritus.game import GameFactory
 from democritus.specification import Specification
 
 
-def plotStrategies(game, Confusion, Sender, Receiver, block=False, vline=None):
+def plot_strategies(game, sender_strategy, receiver_strategy, block=False, vline=None):
     plt.clf()
 
     plt.subplot(2, 2, 1)
@@ -27,12 +27,12 @@ def plotStrategies(game, Confusion, Sender, Receiver, block=False, vline=None):
     plt.imshow(game.utility, origin='upper', interpolation='none')
     plt.title('Utility')
     plt.subplot(2, 4, 4)
-    plt.imshow(Confusion, origin='upper', interpolation='none')
-    plt.title('Confusion')
+    plt.imshow(game.similarity, origin='upper', interpolation='none')
+    plt.title('Similarity')
 
     plt.subplot(2, 2, 3)
     for m in range(game.messages.size()):
-        plt.plot(game.states.elements, Sender[:, m], label='$m_' + str(m + 1) + '$')
+        plt.plot(game.states.elements, sender_strategy[:, m], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(-0.1, 1.1)
@@ -41,7 +41,7 @@ def plotStrategies(game, Confusion, Sender, Receiver, block=False, vline=None):
 
     plt.subplot(2, 2, 4)
     for m in range(game.messages.size()):
-        plt.plot(game.states.elements, Receiver[m, :], label='$m_' + str(m + 1) + '$')
+        plt.plot(game.states.elements, receiver_strategy[m, :], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(ymin=0)
@@ -60,67 +60,58 @@ argparser.add_argument('configfile')
 argparser.add_argument('--output-prefix', default=time.strftime('%Y%m%d-%H%M%S'))
 args = argparser.parse_args()
 
-BatchMode = args.batch
-ConfigFile = open(args.configfile, 'r')
+batch_mode = args.batch
+config_file = open(args.configfile, 'r')
 
 ## Initialization
 
-cfg = Specification.from_dict(yaml.load(ConfigFile))
-
+cfg = Specification.from_dict(yaml.load(config_file))
 game = GameFactory.create(cfg['game'])
-StateSpace = game.states
-MessageSpace = game.messages
-Utility = game.utility
-Similarity = game.similarity
+dynamics = DynamicsFactory.create(cfg['dynamics'])
 
-LimitedPerception = cfg['perception']['limited']
-Acuity = cfg['perception']['acuity']
-
-Dynamics = DynamicsFactory.create(cfg['dynamics'])
-
-Confusion = Similarity
-
-Sender = utils.make_row_stochastic(np.random.random((StateSpace.size(), MessageSpace.size())))
-Receiver = utils.make_row_stochastic(np.random.random((MessageSpace.size(), StateSpace.size())))
+sender_strategy = utils.make_row_stochastic(np.random.random((game.states.size(), game.messages.size())))
+receiver_strategy = utils.make_row_stochastic(np.random.random((game.messages.size(), game.states.size())))
 
 converged = False
 while not converged:
 
-    ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
-                          for t in range(StateSpace.size()) for m in range(MessageSpace.size()) for x in range(
-        StateSpace.size()))
-    print(ExpectedUtility / np.sum(Utility))
+    expected_utility = sum(game.states.priors[t] * sender_strategy[t, m] * receiver_strategy[m, x] * game.utility[t, x]
+                           for t in range(game.states.size()) for m in range(game.messages.size()) for x in range(
+        game.states.size()))
+    print(expected_utility / np.sum(game.utility))
 
-    if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver)
+    if not batch_mode:
+        plot_strategies(game, sender_strategy, receiver_strategy)
 
-    SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
+    sender_before, receiver_before = copy.deepcopy(sender_strategy), copy.deepcopy(receiver_strategy)
 
     ## Sender strategy
 
-    Sender = Dynamics.update_sender(Sender, Receiver, game)
+    sender_strategy = dynamics.update_sender(sender_strategy, receiver_strategy, game)
 
-    if LimitedPerception:
-        Sender = np.dot(Confusion, Sender)
+    if game.imprecise:
+        sender_strategy = np.dot(game.similarity, sender_strategy)
 
-    Sender = utils.make_row_stochastic(Sender)
+    sender_strategy = utils.make_row_stochastic(sender_strategy)
 
     ## Receiver strategy
 
-    Receiver = Dynamics.update_receiver(Sender, Receiver, game)
+    receiver_strategy = dynamics.update_receiver(sender_strategy, receiver_strategy, game)
 
-    if LimitedPerception:
-        Receiver = np.dot(Receiver, np.transpose(Confusion))
+    if game.imprecise:
+        receiver_strategy = np.dot(receiver_strategy, np.transpose(game.similarity))
 
-    Receiver = utils.make_row_stochastic(Receiver)
+    receiver_strategy = utils.make_row_stochastic(receiver_strategy)
 
-    if np.sum(abs(Sender - SenderBefore)) < 0.01 and np.sum(abs(Receiver - ReceiverBefore)) < 0.01:
+    if np.sum(abs(sender_strategy - sender_before)) < 0.01 and np.sum(abs(receiver_strategy - receiver_before)) < 0.01:
         converged = True
-        if not BatchMode: print('Language converged!')
+        if not batch_mode: print('Language converged!')
 
-if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver, block=True)
+if not batch_mode:
+    plot_strategies(game, sender_strategy, receiver_strategy, block=True)
 
 # Outputting to file
-SenderOutputFilename = args.output_prefix + '-sender.csv'
-ReceiverOutputFilename = args.output_prefix + '-receiver.csv'
-np.savetxt(SenderOutputFilename, Sender, delimiter=',')
-np.savetxt(ReceiverOutputFilename, Receiver, delimiter=',')
+sender_output_filename = args.output_prefix + '-sender.csv'
+receiver_output_filename = args.output_prefix + '-receiver.csv'
+np.savetxt(sender_output_filename, sender_strategy, delimiter=',')
+np.savetxt(receiver_output_filename, receiver_strategy, delimiter=',')
