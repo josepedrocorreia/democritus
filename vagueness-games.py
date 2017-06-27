@@ -118,30 +118,6 @@ while not converged:
         converged = True
         if not BatchMode: print('Language converged!')
 
-MaximalElements = [np.where(Receiver[m] == Receiver[m].max())[0] for m in range(MessageSpace.size())]
-Criterion1 = all(len(MaximalElements[m]) == 1 for m in range(MessageSpace.size()))
-
-Prototype = [np.argmax(Receiver[m]) for m in range(MessageSpace.size())]
-CriterionX = all(
-    Prototype[m1] != Prototype[m2] if m1 != m2 else True for m1 in range(MessageSpace.size()) for m2 in range(
-        MessageSpace.size()))
-
-# precision issues, otherwise Receiver[m,t1] > Receiver[m,t2]
-Criterion2 = all(all(Receiver[m, t1] > Receiver[m, t2] or Receiver[m, t2] - Receiver[m, t1] < 0.01 for t1 in range(
-    StateSpace.size()) for t2 in range(StateSpace.size()) if
-                     Similarity[t1, Prototype[m]] > Similarity[t2, Prototype[m]]) for m in range(MessageSpace.size()))
-
-Criterion3 = all(all(
-    Sender[t, m1] > Sender[t, m2] or Sender[t, m2] - Sender[t, m1] < 0.01 for m1 in range(MessageSpace.size()) for m2
-    in
-    range(MessageSpace.size()) if Similarity[t, Prototype[m1]] > Similarity[t, Prototype[m2]]) for t in range(
-    StateSpace.size()))
-
-if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
-    print('Language is proper vague language')
-elif not BatchMode:
-    print('Language is NOT properly vague')
-
 if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver, block=True)
 
 # Outputting to file
