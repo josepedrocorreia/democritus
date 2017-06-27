@@ -1,3 +1,5 @@
+from __future__ import division
+
 import argparse
 import copy
 import time
@@ -13,24 +15,24 @@ from democritus.game import GameFactory
 from democritus.specification import Specification
 
 
-def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=False, vline=None):
+def plotStrategies(game, Confusion, Sender, Receiver, block=False, vline=None):
     plt.clf()
 
     plt.subplot(2, 2, 1)
-    plt.plot(StateSpace.elements, StateSpace.priors)
+    plt.plot(game.states.elements, game.states.priors)
     plt.ylim(ymin=0)
     plt.title('Priors')
 
     plt.subplot(2, 4, 3)
-    plt.imshow(Utility, origin='upper', interpolation='none')
+    plt.imshow(game.utility.utilities, origin='upper', interpolation='none')
     plt.title('Utility')
     plt.subplot(2, 4, 4)
     plt.imshow(Confusion, origin='upper', interpolation='none')
     plt.title('Confusion')
 
     plt.subplot(2, 2, 3)
-    for m in range(MessageSpace.size()):
-        plt.plot(StateSpace.elements, Sender[:, m], label='$m_' + str(m + 1) + '$')
+    for m in range(game.messages.size()):
+        plt.plot(game.states.elements, Sender[:, m], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(-0.1, 1.1)
@@ -38,8 +40,8 @@ def plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receive
     plt.title('Sender strategy')
 
     plt.subplot(2, 2, 4)
-    for m in range(MessageSpace.size()):
-        plt.plot(StateSpace.elements, Receiver[m, :], label='$m_' + str(m + 1) + '$')
+    for m in range(game.messages.size()):
+        plt.plot(game.states.elements, Receiver[m, :], label='$m_' + str(m + 1) + '$')
     if vline:
         plt.axvline(vline, linestyle='--', color='red')
     plt.ylim(ymin=0)
@@ -65,9 +67,10 @@ ConfigFile = open(args.configfile, 'r')
 
 cfg = Specification.from_dict(yaml.load(ConfigFile))
 
-Game = GameFactory.create(cfg['game'])
-StateSpace = Game.states
-MessageSpace = Game.messages
+game = GameFactory.create(cfg['game'])
+StateSpace = game.states
+MessageSpace = game.messages
+Utility = game.utility
 
 LimitedPerception = cfg['perception']['limited']
 Acuity = cfg['perception']['acuity']
@@ -75,8 +78,6 @@ Acuity = cfg['perception']['acuity']
 Dynamics = DynamicsFactory.create(cfg['dynamics'])
 
 Similarity = np.exp(-(StateSpace.distances ** 2 / (1.0 / Acuity) ** 2))
-
-Utility = Similarity
 
 Confusion = Similarity
 
@@ -86,18 +87,18 @@ Receiver = utils.make_row_stochastic(np.random.random((MessageSpace.size(), Stat
 converged = False
 while not converged:
 
-    ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility[t, x]
+    ExpectedUtility = sum(StateSpace.priors[t] * Sender[t, m] * Receiver[m, x] * Utility.utilities[t, x]
                           for t in range(StateSpace.size()) for m in range(MessageSpace.size()) for x in range(
         StateSpace.size()))
-    print(ExpectedUtility / np.sum(Utility))
+    print(ExpectedUtility / np.sum(Utility.utilities))
 
-    if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver)
+    if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver)
 
     SenderBefore, ReceiverBefore = copy.deepcopy(Sender), copy.deepcopy(Receiver)
 
     ## Sender strategy
 
-    Sender = Dynamics.update_sender(Sender, Receiver, StateSpace, MessageSpace, Utility)
+    Sender = Dynamics.update_sender(Sender, Receiver, game)
 
     if LimitedPerception:
         Sender = np.dot(Confusion, Sender)
@@ -106,7 +107,7 @@ while not converged:
 
     ## Receiver strategy
 
-    Receiver = Dynamics.update_receiver(Sender, Receiver, StateSpace, MessageSpace, Utility)
+    Receiver = Dynamics.update_receiver(Sender, Receiver, game)
 
     if LimitedPerception:
         Receiver = np.dot(Receiver, np.transpose(Confusion))
@@ -141,7 +142,7 @@ if Criterion1 and CriterionX and Criterion2 and Criterion3 and not BatchMode:
 elif not BatchMode:
     print('Language is NOT properly vague')
 
-if not BatchMode: plotStrategies(MessageSpace, StateSpace, Utility, Confusion, Sender, Receiver, block=True)
+if not BatchMode: plotStrategies(game, Confusion, Sender, Receiver, block=True)
 
 # Outputting to file
 SenderOutputFilename = args.output_prefix + '-sender.csv'

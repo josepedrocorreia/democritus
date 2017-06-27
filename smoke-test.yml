@@ -15,6 +15,10 @@ game:
       type: numbered
       size: 2
 
+  utility:
+    type: nosofsky
+    decay: 0.1
+
 perception:
   limited: true
   acuity: 10

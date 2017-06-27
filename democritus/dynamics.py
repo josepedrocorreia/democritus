@@ -1,3 +1,5 @@
+from __future__ import division
+
 from builtins import range
 
 import numpy as np
@@ -22,19 +24,20 @@ class DynamicsFactory(object):
 
 
 class Dynamics(object):
-    def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
+    def update_sender(self, sender_strategy, receiver_strategy, game):
         raise NotImplementedError('Subclasses of Dynamics must implement update_sender method')
 
-    def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
+    def update_receiver(self, sender_strategy, receiver_strategy, game):
         raise NotImplementedError('Subclasses of Dynamics must implement update_receiver method')
 
 
 class ReplicatorDynamics(Dynamics):
-    def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_sender(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
+            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+             range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
             for m in range(n_messages):
@@ -42,11 +45,11 @@ class ReplicatorDynamics(Dynamics):
                                             expected_utility[t, m] * n_messages / sum(expected_utility[t])
         return make_row_stochastic(new_sender_strategy)
 
-    def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_receiver(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
@@ -58,22 +61,23 @@ class ReplicatorDynamics(Dynamics):
 
 
 class BestResponseDynamics(Dynamics):
-    def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_sender(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
+            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+             range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
             for m in range(n_messages):
                 new_sender_strategy[t, m] = 1 if expected_utility[t, m] == max(expected_utility[t]) else 0
         return make_row_stochastic(new_sender_strategy)
 
-    def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_receiver(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
@@ -87,11 +91,12 @@ class QuantalResponseDynamics(Dynamics):
     def __init__(self, rationality):
         self.rationality = rationality
 
-    def update_sender(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_sender(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(receiver_strategy[m], utility[t]) for m in range(n_messages)] for t in range(n_states)])
+            [[np.dot(receiver_strategy[m], game.utility.utilities[t]) for m in range(n_messages)] for t in
+             range(n_states)])
         new_sender_strategy = np.zeros((n_states, n_messages))
         for t in range(n_states):
             for m in range(n_messages):
@@ -99,11 +104,11 @@ class QuantalResponseDynamics(Dynamics):
                                             sum(np.exp(self.rationality * expected_utility[t]))
         return make_row_stochastic(new_sender_strategy)
 
-    def update_receiver(self, sender_strategy, receiver_strategy, state_space, message_space, utility):
-        n_states = state_space.size()
-        n_messages = message_space.size()
+    def update_receiver(self, sender_strategy, receiver_strategy, game):
+        n_states = game.states.size()
+        n_messages = game.messages.size()
         expected_utility = np.array(
-            [[np.dot(state_space.priors * sender_strategy[:, m], utility[t])
+            [[np.dot(game.states.priors * sender_strategy[:, m], game.utility.utilities[t])
               for t in range(n_states)]
              for m in range(n_messages)])
         new_receiver_strategy = np.zeros((n_messages, n_states))
