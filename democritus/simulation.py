@@ -66,11 +66,29 @@ class Simulation(object):
         receiver_strategy = self.get_current_receiver_strategy()
 
         new_sender_strategy = self.dynamics.update_sender(sender_strategy, receiver_strategy, self.game)
-        new_receiver_strategy = self.dynamics.update_receiver(new_sender_strategy, receiver_strategy, self.game)
+        new_receiver_strategy = self.dynamics.update_receiver(sender_strategy, receiver_strategy, self.game)
 
         self.sender_strategies.append(new_sender_strategy)
         self.receiver_strategies.append(new_receiver_strategy)
         self.current_step += 1
+
+    def run_until_converged(self, max_steps=100, plot_steps=False, block_at_end=False):
+        while self.current_step < max_steps and not self.converged():
+            # Metrics stuff
+            # sender_strategy = simulation.get_current_sender_strategy()
+            # receiver_strategy = simulation.get_current_receiver_strategy()
+            #
+            # expected_utility = sum(
+            #     game.states.priors[t] * sender_strategy[t, m] * receiver_strategy[m, x] * game.utility[t, x]
+            #     for t in range(game.states.size()) for m in range(game.messages.size()) for x in range(
+            #         game.states.size()))
+            # print(expected_utility / np.sum(game.utility))
+            if plot_steps:
+                self.plot()
+            self.step()
+
+        if plot_steps:
+            self.plot(block=block_at_end)
 
     def plot(self, block=False):
         plt.clf()

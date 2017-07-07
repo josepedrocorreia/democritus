@@ -87,8 +87,34 @@ def test_converged(almost_converged_simulation):
     assert simulation.converged() is True
 
 
-# SimulationSpecReader
+def test_run_until_converged(almost_converged_simulation):
+    simulation = almost_converged_simulation
+    assert simulation.converged() is False
+    simulation.run_until_converged()
+    # should have run twice until staying in the stable point
+    assert simulation.converged() is True
+    assert simulation.current_step == 2
 
+
+def test_run_until_converged_with_max_steps(game, dynamics):
+    # flip-flopping strategies under best response
+    sender_strategy = [[1, 0], [0, 1]]
+    receiver_strategy = [[0, 1], [1, 0]]
+    simulation = Simulation(game, dynamics, sender_strategy, receiver_strategy)
+    simulation.run_until_converged(max_steps=50)
+    assert simulation.converged() is False
+    assert simulation.current_step == 50
+
+
+# want to double-check to make sure there are no infinite loops
+def test_run_until_converged_with_none_max_steps_throws_exception(almost_converged_simulation):
+    simulation = almost_converged_simulation
+    assert simulation.converged() is False
+    with pytest.raises(Exception):
+        simulation.run_until_converged(max_steps=None)
+
+
+# SimulationSpecReader
 
 def test_read_sim_max_3_5_replicator():
     simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
