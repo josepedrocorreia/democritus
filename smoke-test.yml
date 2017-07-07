@@ -26,4 +26,4 @@ game:
   imprecise: true
 
 dynamics:
-  type: best response
+  type: replicator
