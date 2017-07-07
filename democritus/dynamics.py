@@ -43,6 +43,9 @@ class ReplicatorDynamics(Dynamics):
             for m in range(n_messages):
                 new_sender_strategy[t, m] = sender_strategy[t, m] * \
                                             expected_utility[t, m] * n_messages / sum(expected_utility[t])
+        new_sender_strategy = make_row_stochastic(new_sender_strategy)
+        if game.imprecise:
+            new_sender_strategy = np.dot(game.similarity, new_sender_strategy)
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, game):
@@ -57,6 +60,9 @@ class ReplicatorDynamics(Dynamics):
             for t in range(n_states):
                 new_receiver_strategy[m, t] = receiver_strategy[m, t] * \
                                               (expected_utility[m, t] * n_states + 0) / (sum(expected_utility[m]) + 0)
+        new_receiver_strategy = make_row_stochastic(new_receiver_strategy)
+        if game.imprecise:
+            new_receiver_strategy = np.dot(new_receiver_strategy, np.transpose(game.similarity))
         return make_row_stochastic(new_receiver_strategy)
 
 
@@ -71,6 +77,9 @@ class BestResponseDynamics(Dynamics):
         for t in range(n_states):
             for m in range(n_messages):
                 new_sender_strategy[t, m] = 1 if expected_utility[t, m] == max(expected_utility[t]) else 0
+        new_sender_strategy = make_row_stochastic(new_sender_strategy)
+        if game.imprecise:
+            new_sender_strategy = np.dot(game.similarity, new_sender_strategy)
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, game):
@@ -84,6 +93,9 @@ class BestResponseDynamics(Dynamics):
         for m in range(n_messages):
             for t in range(n_states):
                 new_receiver_strategy[m, t] = 1 if expected_utility[m, t] == max(expected_utility[m]) else 0
+        new_receiver_strategy = make_row_stochastic(new_receiver_strategy)
+        if game.imprecise:
+            new_receiver_strategy = np.dot(new_receiver_strategy, np.transpose(game.similarity))
         return make_row_stochastic(new_receiver_strategy)
 
 
@@ -102,6 +114,9 @@ class QuantalResponseDynamics(Dynamics):
             for m in range(n_messages):
                 new_sender_strategy[t, m] = np.exp(self.rationality * expected_utility[t, m]) / \
                                             sum(np.exp(self.rationality * expected_utility[t]))
+        new_sender_strategy = make_row_stochastic(new_sender_strategy)
+        if game.imprecise:
+            new_sender_strategy = np.dot(game.similarity, new_sender_strategy)
         return make_row_stochastic(new_sender_strategy)
 
     def update_receiver(self, sender_strategy, receiver_strategy, game):
@@ -116,4 +131,7 @@ class QuantalResponseDynamics(Dynamics):
             for t in range(n_states):
                 new_receiver_strategy[m, t] = np.exp(self.rationality * expected_utility[m, t]) / \
                                               sum(np.exp(self.rationality * expected_utility[m]))
+        new_receiver_strategy = make_row_stochastic(new_receiver_strategy)
+        if game.imprecise:
+            new_receiver_strategy = np.dot(new_receiver_strategy, np.transpose(game.similarity))
         return make_row_stochastic(new_receiver_strategy)

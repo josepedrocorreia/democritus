@@ -66,14 +66,7 @@ class Simulation(object):
         receiver_strategy = self.get_current_receiver_strategy()
 
         new_sender_strategy = self.dynamics.update_sender(sender_strategy, receiver_strategy, self.game)
-        if self.game.imprecise:
-            new_sender_strategy = np.dot(self.game.similarity, new_sender_strategy)
-        new_sender_strategy = utils.make_row_stochastic(new_sender_strategy)
-
         new_receiver_strategy = self.dynamics.update_receiver(new_sender_strategy, receiver_strategy, self.game)
-        if self.game.imprecise:
-            new_receiver_strategy = np.dot(new_receiver_strategy, np.transpose(self.game.similarity))
-        new_receiver_strategy = utils.make_row_stochastic(new_receiver_strategy)
 
         self.sender_strategies.append(new_sender_strategy)
         self.receiver_strategies.append(new_receiver_strategy)
