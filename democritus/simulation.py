@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 import yaml
 
 from democritus import utils
@@ -73,6 +74,9 @@ class Simulation(object):
         self.current_step += 1
 
     def run_until_converged(self, max_steps=100, plot_steps=False, block_at_end=False):
+        if type(max_steps) is not int:
+            raise TypeError('Value of max_steps should be int')
+
         while self.current_step < max_steps and not self.converged():
             # Metrics stuff
             # sender_strategy = simulation.get_current_sender_strategy()
