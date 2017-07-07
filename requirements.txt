@@ -1,3 +1,5 @@
 future
 numpy
 scipy
+matplotlib
+pyyaml
