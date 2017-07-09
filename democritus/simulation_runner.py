@@ -1,6 +1,7 @@
 import argparse
-import numpy as np
 import time
+
+import numpy as np
 
 from democritus.simulation import SimulationSpecReader
 
@@ -26,3 +27,9 @@ class SimulationRunner(object):
         receiver_output_filename = self.args.output_prefix + '-receiver.csv'
         np.savetxt(sender_output_filename, self.simulation.get_current_sender_strategy(), delimiter=',')
         np.savetxt(receiver_output_filename, self.simulation.get_current_receiver_strategy(), delimiter=',')
+
+
+if __name__ == "__main__":
+    runner = SimulationRunner()
+    runner.run(block_at_end=False)
+    runner.write_results()
