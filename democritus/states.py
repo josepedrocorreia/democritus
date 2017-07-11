@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import stats as stats
 
@@ -59,6 +60,10 @@ class StateSet(object):
 
     def size(self):
         return len(self.elements)
+
+    def plot(self):
+        plt.plot(self.elements, self.priors, marker='.')
+        plt.ylim(ymin=0)
 
 
 class MetricSpace(StateSet):

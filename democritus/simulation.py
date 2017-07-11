@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 import yaml
 
 from democritus import utils
@@ -95,12 +94,12 @@ class Simulation(object):
             self.plot(block=block_at_end)
 
     def plot(self, block=False):
+        plt.style.use('seaborn-deep')
         plt.clf()
 
         plt.subplot(2, 2, 1)
-        plt.plot(self.game.states.elements, self.game.states.priors)
-        plt.ylim(ymin=0)
         plt.title('Priors')
+        self.game.states.plot()
 
         plt.subplot(2, 4, 3)
         plt.imshow(self.game.utility, origin='upper', interpolation='none')
@@ -112,7 +111,7 @@ class Simulation(object):
         plt.subplot(2, 2, 3)
         sender_strategy = self.get_current_sender_strategy()
         for m in range(self.game.messages.size()):
-            plt.plot(self.game.states.elements, sender_strategy[:, m], label='$m_' + str(m + 1) + '$')
+            plt.plot(self.game.states.elements, sender_strategy[:, m], label='$m_' + str(m + 1) + '$', marker='.')
         plt.ylim(-0.1, 1.1)
         plt.legend(loc='lower left')
         plt.title('Sender strategy')
@@ -120,10 +119,10 @@ class Simulation(object):
         plt.subplot(2, 2, 4)
         receiver_strategy = self.get_current_receiver_strategy()
         for m in range(self.game.messages.size()):
-            plt.plot(self.game.states.elements, receiver_strategy[m, :], label='$m_' + str(m + 1) + '$')
+            plt.plot(self.game.states.elements, receiver_strategy[m, :], label='$m_' + str(m + 1) + '$', marker='.')
         plt.ylim(ymin=0)
         plt.legend(loc='lower left')
         plt.title('Receiver strategy')
 
         plt.show(block=block)
-        plt.pause(0.01)
+        plt.pause(0.000001)
