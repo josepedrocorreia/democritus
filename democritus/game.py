@@ -15,10 +15,10 @@ class GameFactory(object):
         states = StatesFactory.create(states_spec)
         messages_spec = spec.get_or_fail('messages')
         messages = MessagesFactory.create(messages_spec)
-        utility_spec = spec.get('utility') or Specification.from_dict({})
+        utility_spec = spec.get('utility') or Specification.empty()
         utility = SimilarityFunctionReader.create(utility_spec, states)
         if spec_type == 'sim-max':
-            similarity_spec = spec.get('similarity') or Specification.from_dict({})
+            similarity_spec = spec.get('similarity') or Specification.empty()
             similarity = SimilarityFunctionReader.create(similarity_spec, states)
             imprecise = spec.get('imprecise') or False
             return SimMaxGame(states, messages, utility, similarity, imprecise)
@@ -32,6 +32,15 @@ class Game(object):
         self.messages = messages
         self.actions = actions
         self.utility = utility
+
+    def number_of_states(self):
+        return self.states.size()
+
+    def number_of_messages(self):
+        return self.messages.size()
+
+    def number_of_actions(self):
+        return self.actions.size()
 
 
 class SimMaxGame(Game):

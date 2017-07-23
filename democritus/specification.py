@@ -12,6 +12,10 @@ class Specification(dict):
             spec[key] = value
         return spec
 
+    @staticmethod
+    def empty():
+        return Specification.from_dict({})
+
     def get_or_fail(self, field):
         if field not in self:
             raise MissingFieldInSpecification(self, field)

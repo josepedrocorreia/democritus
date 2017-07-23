@@ -5,27 +5,31 @@ import yaml
 from democritus import utils
 from democritus.dynamics import DynamicsFactory
 from democritus.game import GameFactory
+from democritus.simulation_metrics import SimulationMetrics
 from democritus.specification import Specification
 
 
 class SimulationSpecReader(object):
     @staticmethod
     def read_from_file(filename):
-        config_file = open(filename, 'r')
-        spec = Specification.from_dict(yaml.load(config_file))
+        spec_file = open(filename, 'r')
+        spec_dict = yaml.safe_load(spec_file)
+        spec = Specification.from_dict(spec_dict)
         return SimulationSpecReader.read(spec)
 
     @staticmethod
     def read(spec):
         game_spec = spec.get_or_fail('game')
         dynamics_spec = spec.get_or_fail('dynamics')
+        simulations_metrics_names = spec.get('metrics') or []
         game = GameFactory.create(game_spec)
         dynamics = DynamicsFactory.create(dynamics_spec)
-        return Simulation(game, dynamics)
+        simulations_metrics = [SimulationMetrics.create(metric_name) for metric_name in simulations_metrics_names]
+        return Simulation(game, dynamics, simulations_metrics)
 
 
 class Simulation(object):
-    def __init__(self, game, dynamics, sender_strategy=None, receiver_strategy=None):
+    def __init__(self, game, dynamics, simulation_metrics=None, sender_strategy=None, receiver_strategy=None):
         self.game = game
         self.dynamics = dynamics
         self.current_step = 0
@@ -37,6 +41,15 @@ class Simulation(object):
             receiver_strategy = utils.make_row_stochastic(np.random.random((game.messages.size(), game.states.size())))
         self.sender_strategies.append(np.array(sender_strategy))
         self.receiver_strategies.append(np.array(receiver_strategy))
+        self.simulation_measurements = []
+        if simulation_metrics is not None:
+            for metric in simulation_metrics:
+                measurement = metric.calculate(self)
+                self.simulation_measurements.append((metric, [measurement]))
+        # TODO: Fix differently
+        self.first_plot = True
+        plt.rcParams['toolbar'] = 'None'
+        plt.style.use('seaborn-deep')
 
     def get_sender_strategy(self, step):
         return self.sender_strategies[step]
@@ -72,6 +85,10 @@ class Simulation(object):
         self.receiver_strategies.append(new_receiver_strategy)
         self.current_step += 1
 
+        for metric, measurements in self.simulation_measurements:
+            new_measurement = metric.calculate(self)
+            measurements.append(new_measurement)
+
     def run_until_converged(self, max_steps=100, plot_steps=False, block_at_end=False):
         if type(max_steps) is not int:
             raise TypeError('Value of max_steps should be int')
@@ -94,21 +111,29 @@ class Simulation(object):
             self.plot(block=block_at_end)
 
     def plot(self, block=False):
-        plt.style.use('seaborn-deep')
+        n_metrics = len(self.simulation_measurements)
+        metric_plot_span = 4
+        n_rows = 3 if n_metrics > 0 else 2
+        n_cols = n_metrics * metric_plot_span if n_metrics > 0 else metric_plot_span
+        plot_grid_shape = (n_rows, n_cols)
+        states_plot_span = n_cols // 2
+        utility_plot_span = n_cols // 4
+        strategy_plot_span = n_cols // 2
+
         plt.clf()
 
-        plt.subplot(2, 2, 1)
+        plt.subplot2grid(plot_grid_shape, (0, 0), colspan=states_plot_span)
         plt.title('Priors')
         self.game.states.plot()
 
-        plt.subplot(2, 4, 3)
+        plt.subplot2grid(plot_grid_shape, (0, states_plot_span), colspan=utility_plot_span)
         plt.imshow(self.game.utility, origin='upper', interpolation='none')
         plt.title('Utility')
-        plt.subplot(2, 4, 4)
+        plt.subplot2grid(plot_grid_shape, (0, states_plot_span + utility_plot_span), colspan=utility_plot_span)
         plt.imshow(self.game.similarity, origin='upper', interpolation='none')
         plt.title('Similarity')
 
-        plt.subplot(2, 2, 3)
+        plt.subplot2grid(plot_grid_shape, (1, 0), colspan=strategy_plot_span)
         sender_strategy = self.get_current_sender_strategy()
         for m in range(self.game.messages.size()):
             plt.plot(self.game.states.elements, sender_strategy[:, m], label='$m_' + str(m + 1) + '$', marker='.')
@@ -116,7 +141,7 @@ class Simulation(object):
         plt.legend(loc='lower left')
         plt.title('Sender strategy')
 
-        plt.subplot(2, 2, 4)
+        plt.subplot2grid(plot_grid_shape, (1, strategy_plot_span), colspan=strategy_plot_span)
         receiver_strategy = self.get_current_receiver_strategy()
         for m in range(self.game.messages.size()):
             plt.plot(self.game.states.elements, receiver_strategy[m, :], label='$m_' + str(m + 1) + '$', marker='.')
@@ -124,5 +149,16 @@ class Simulation(object):
         plt.legend(loc='lower left')
         plt.title('Receiver strategy')
 
+        for i in range(n_metrics):
+            # TODO: make this more readable
+            plt.subplot2grid(plot_grid_shape, (2, i * metric_plot_span), colspan=metric_plot_span)
+            simulation_measurement = self.simulation_measurements[i]
+            plt.plot(list(range(self.current_step + 1)), simulation_measurement[1], marker='.')
+            plt.ylim(ymin=0)
+            plt.title(simulation_measurement[0].name)
+
+        if self.first_plot:
+            plt.tight_layout(h_pad=0.5, w_pad=0)
+        self.first_plot = False
         plt.show(block=block)
         plt.pause(0.000001)

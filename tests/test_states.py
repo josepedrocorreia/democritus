@@ -3,7 +3,6 @@ from __future__ import division
 import pytest
 
 from democritus.exceptions import MissingFieldInSpecification
-from democritus.specification import Specification
 from democritus.states import *
 
 
@@ -80,7 +79,7 @@ def test_metric_factory_euclidean():
 
 
 def test_metric_factory_missing_type_defaults_to_euclidean():
-    metric_spec = Specification.from_dict({})
+    metric_spec = Specification.empty()
     metric_3 = MetricFactory.create(metric_spec, [1, 2, 3])
     assert metric_3[0].tolist() == [0, 1, 2]
     assert metric_3[1].tolist() == [1, 0, 1]
@@ -113,7 +112,7 @@ def test_priors_factory_normal():
 
 
 def test_priors_factory_missing_type_defaults_to_uniform():
-    priors_spec = Specification.from_dict({})
+    priors_spec = Specification.empty()
     priors_3 = PriorsFactory.create(priors_spec, [1, 2, 3])
     assert priors_3.tolist() == [1 / 3, 1 / 3, 1 / 3]
 

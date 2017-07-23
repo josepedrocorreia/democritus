@@ -1,29 +1,34 @@
 game:
-  type: sim-max
+  type: 'sim-max'
 
   states:
-    type: metric space
+    type: 'metric space'
     elements:
-      type: interval
-      size: 30
+      type: 'interval'
+      size: 10
       start: 0
       end: 1
 
   messages:
-    type: set
+    type: 'set'
     elements:
-      type: numbered
+      type: 'numbered'
       size: 2
 
   utility:
-    type: nosofsky
+    type: 'nosofsky'
     decay: 0.1
 
   similarity:
-    type: nosofsky
-    decay: 0.2
+    type: 'nosofsky'
+    decay: 0.1
 
   imprecise: true
 
 dynamics:
-  type: replicator
+  type: 'replicator'
+
+metrics:
+  - 'expected utility'
+  - 'sender entropy'
+  - 'receiver entropy'

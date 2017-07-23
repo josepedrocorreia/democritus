@@ -35,7 +35,7 @@ def test_dynamics_factory_types():
 
 
 def test_dynamics_factory_missing_type_defaults_to_replicator():
-    dynamics_spec = Specification.from_dict({})
+    dynamics_spec = Specification.empty()
     dynamics = DynamicsFactory.create(dynamics_spec)
     assert type(dynamics) is ReplicatorDynamics
 

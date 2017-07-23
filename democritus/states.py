@@ -13,14 +13,14 @@ class StatesFactory(object):
         spec_type = spec.get('type') or 'set'
         if spec_type == 'set':
             elements_spec = spec.get_or_fail('elements')
-            priors_spec = spec.get('priors') or Specification.from_dict({})
+            priors_spec = spec.get('priors') or Specification.empty()
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             return StateSet(elements, priors)
         if spec_type == 'metric space':
             elements_spec = spec.get_or_fail('elements')
-            priors_spec = spec.get('priors') or Specification.from_dict({})
-            metric_spec = spec.get('metric') or Specification.from_dict({})
+            priors_spec = spec.get('priors') or Specification.empty()
+            metric_spec = spec.get('metric') or Specification.empty()
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)

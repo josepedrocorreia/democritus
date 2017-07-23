@@ -25,10 +25,10 @@ class DynamicsFactory(object):
 
 class Dynamics(object):
     def update_sender(self, sender_strategy, receiver_strategy, game):
-        raise NotImplementedError('Subclasses of Dynamics must implement update_sender method')
+        raise NotImplementedError('Subclasses of Dynamics must implement \'update_sender\' method')
 
     def update_receiver(self, sender_strategy, receiver_strategy, game):
-        raise NotImplementedError('Subclasses of Dynamics must implement update_receiver method')
+        raise NotImplementedError('Subclasses of Dynamics must implement \'update_receiver\' method')
 
 
 class ReplicatorDynamics(Dynamics):
