@@ -15,6 +15,11 @@ def test_from_dict_recursive():
     assert spec['c']['f']['g'] == 'h'
 
 
+def test_empty():
+    spec = Specification.empty()
+    assert len(spec) == 0
+
+
 def test_get_or_fail_successful():
     spec = Specification.from_dict({'a': 'b'})
     assert spec.get_or_fail('a') == 'b'

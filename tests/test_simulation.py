@@ -1,15 +1,11 @@
+import numpy as np
 import pytest
 from fixtures import *
 
-from democritus.dynamics import ReplicatorDynamics
-from democritus.exceptions import MissingFieldInSpecification
-from democritus.game import SimMaxGame
-from democritus.simulation import *
-from democritus.simulation_metrics import ExpectedUtilityMetric
+from democritus.simulation import Simulation
 
 
 # Simulation
-
 def test_constructor_defaults(game, dynamics):
     simulation = Simulation(game, dynamics)
     assert simulation.current_step == 0
@@ -90,45 +86,3 @@ def test_run_until_converged_with_none_max_steps_throws_exception(almost_converg
         simulation.run_until_converged(max_steps=None)
 
 
-# SimulationSpecReader
-
-def test_read_sim_max_3_5_replicator_with_metrics():
-    simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                        'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                        'messages': {'elements': {'type': 'numbered', 'size': 5}}},
-                                               'dynamics': {'type': 'replicator'},
-                                               'metrics': ['expected utility']})
-    simulation = SimulationSpecReader.read(simulation_spec)
-    assert type(simulation.game) is SimMaxGame
-    assert type(simulation.dynamics) is ReplicatorDynamics
-    assert len(simulation.simulation_measurements) == 1
-    assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
-    assert len(simulation.simulation_measurements[0][1]) == 1
-
-
-def test_read_missing_game_throws_exception():
-    simulation_spec = Specification.from_dict({'dynamics': {'type': 'replicator'}})
-    with pytest.raises(MissingFieldInSpecification):
-        SimulationSpecReader.read(simulation_spec)
-
-
-def test_read_missing_dynamics_throws_exception():
-    simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                        'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                        'messages': {'elements': {'type': 'numbered', 'size': 5}}}})
-    with pytest.raises(MissingFieldInSpecification):
-        SimulationSpecReader.read(simulation_spec)
-
-
-def test_read_missing_metrics_throws_exception():
-    simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                        'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                        'messages': {'elements': {'type': 'numbered', 'size': 5}}},
-                                               'dynamics': {'type': 'replicator'},
-                                               'metrics': ['expected utility']})
-    simulation = SimulationSpecReader.read(simulation_spec)
-    assert type(simulation.game) is SimMaxGame
-    assert type(simulation.dynamics) is ReplicatorDynamics
-    assert len(simulation.simulation_measurements) == 1
-    assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
-    assert len(simulation.simulation_measurements[0][1]) == 1

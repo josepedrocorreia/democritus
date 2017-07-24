@@ -1,10 +1,27 @@
+import numpy as np
 import pytest
 
-from democritus.dynamics import DynamicsFactory
-from democritus.game import GameFactory
+from democritus.collections import StateSet, MessageSet
+from democritus.converters import StatesFactory, GameFactory, DynamicsFactory
+from democritus.games import SimMaxGame
+from democritus.metrics import ExpectedUtilityMetric
 from democritus.simulation import Simulation
-from democritus.simulation_metrics import ExpectedUtilityMetric
 from democritus.specification import Specification
+
+
+@pytest.fixture(name='states')
+def fixture_states():
+    states_spec = Specification.from_dict({'type': 'metric space', 'elements': {'type': 'numbered', 'size': 3}})
+    return StatesFactory.create(states_spec)
+
+
+@pytest.fixture(name='sim_max_game')
+def fixture_sim_max_game():
+    states = StateSet(['t1', 't2'], [0.6, 0.4])
+    messages = MessageSet(['m1', 'm2'])
+    similarity = np.array([[2, 0.5], [0.1, 1]])
+    utility = similarity
+    return SimMaxGame(states, messages, utility, similarity, False)
 
 
 @pytest.fixture(name='game')

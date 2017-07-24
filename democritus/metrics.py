@@ -52,17 +52,3 @@ class ReceiverNormalizedEntropyMetric(SimulationMetric):
             for a in range(game.number_of_actions()))
         normalization_factor = game.number_of_messages() * np.log(game.number_of_actions())
         return entropy / normalization_factor
-
-
-class SimulationMetrics(object):
-    @staticmethod
-    def create(name):
-        name = name.lower()
-        if name == 'expected utility':
-            return ExpectedUtilityMetric()
-        elif name == 'sender entropy':
-            return SenderNormalizedEntropyMetric()
-        elif name == 'receiver entropy':
-            return ReceiverNormalizedEntropyMetric()
-        else:
-            raise ValueError('Unknown simulation metric with name: %s', name)

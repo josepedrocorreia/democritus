@@ -1,31 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml
 
 from democritus import utils
-from democritus.dynamics import DynamicsFactory
-from democritus.game import GameFactory
-from democritus.simulation_metrics import SimulationMetrics
-from democritus.specification import Specification
-
-
-class SimulationSpecReader(object):
-    @staticmethod
-    def read_from_file(filename):
-        spec_file = open(filename, 'r')
-        spec_dict = yaml.safe_load(spec_file)
-        spec = Specification.from_dict(spec_dict)
-        return SimulationSpecReader.read(spec)
-
-    @staticmethod
-    def read(spec):
-        game_spec = spec.get_or_fail('game')
-        dynamics_spec = spec.get_or_fail('dynamics')
-        simulations_metrics_names = spec.get('metrics') or []
-        game = GameFactory.create(game_spec)
-        dynamics = DynamicsFactory.create(dynamics_spec)
-        simulations_metrics = [SimulationMetrics.create(metric_name) for metric_name in simulations_metrics_names]
-        return Simulation(game, dynamics, simulations_metrics)
 
 
 class Simulation(object):
@@ -94,15 +70,6 @@ class Simulation(object):
             raise TypeError('Value of max_steps should be int')
 
         while self.current_step < max_steps and not self.converged():
-            # Metrics stuff
-            # sender_strategy = simulation.get_current_sender_strategy()
-            # receiver_strategy = simulation.get_current_receiver_strategy()
-            #
-            # expected_utility = sum(
-            #     game.states.priors[t] * sender_strategy[t, m] * receiver_strategy[m, x] * game.utility[t, x]
-            #     for t in range(game.states.size()) for m in range(game.messages.size()) for x in range(
-            #         game.states.size()))
-            # print(expected_utility / np.sum(game.utility))
             if plot_steps:
                 self.plot()
             self.step()
