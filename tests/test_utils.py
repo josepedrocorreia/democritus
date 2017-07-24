@@ -1,4 +1,6 @@
-from democritus.utils import *
+import numpy as np
+
+from democritus.utils import make_stochastic, make_row_stochastic
 
 
 def test_make_stochastic_empty_vector():
