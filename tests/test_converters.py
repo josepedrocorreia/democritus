@@ -3,7 +3,7 @@ from __future__ import division
 import numpy as np
 import pytest
 
-from democritus.collections import MessageSet, StateSet, MetricSpace
+from democritus.collections import MessageSet, StateSet, StateMetricSpace
 from democritus.converters import DynamicsFactory, ElementsFactory, SimilarityFunctionReader, StatesFactory, \
     GameFactory, MessagesFactory, MetricFactory, PriorsFactory, SimulationSpecReader, SimulationMetricConverter
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
@@ -140,7 +140,7 @@ class TestStatesFactory(object):
                                                'priors': {'type': 'uniform'},
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
-        assert type(states) is MetricSpace
+        assert type(states) is StateMetricSpace
         assert states.elements.tolist() == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]
@@ -174,7 +174,7 @@ class TestStatesFactory(object):
                                                'elements': {'type': 'numbered', 'size': 3},
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
-        assert type(states) is MetricSpace
+        assert type(states) is StateMetricSpace
         assert states.elements.tolist() == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]
@@ -186,7 +186,7 @@ class TestStatesFactory(object):
                                                'elements': {'type': 'numbered', 'size': 3},
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
-        assert type(states) is MetricSpace
+        assert type(states) is StateMetricSpace
         assert states.elements.tolist() == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]

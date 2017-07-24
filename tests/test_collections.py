@@ -1,6 +1,6 @@
 import numpy as np
 
-from democritus.collections import MessageSet, StateSet, MetricSpace
+from democritus.collections import MessageSet, StateSet, StateMetricSpace
 
 
 class TestMessageSet(object):
@@ -35,12 +35,12 @@ class TestStateSet(object):
         assert state_set.size() == 4
 
 
-class TestMetricSpace(object):
+class TestStateMetricSpace(object):
     def test_attributes(self):
         elements = [1, 2, 3, 4]
         priors = [1 / 4, 1 / 4, 1 / 4, 1 / 4]
         distances = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
-        metric_space = MetricSpace(elements, priors, distances)
+        metric_space = StateMetricSpace(elements, priors, distances)
         assert hasattr(metric_space, 'elements')
         assert metric_space.elements.tolist() == elements
         assert hasattr(metric_space, 'priors')
@@ -52,14 +52,14 @@ class TestMetricSpace(object):
         elements = ['a', 'b', 'c']
         priors = [1 / 3, 1 / 3, 1 / 3]
         distances = [[0, 1, 2], [1, 0, 1], [2, 1, 0]]
-        metric_space = MetricSpace(elements, priors, distances)
+        metric_space = StateMetricSpace(elements, priors, distances)
         assert metric_space.size() == 3
 
     def test_distance(self):
         elements = ['a', 'b', 'c']
         priors = [1 / 3, 1 / 3, 1 / 3]
         distances = [[0, 1, 2], [1, 0, 1], [2, 1, 0]]
-        metric_space = MetricSpace(elements, priors, distances)
+        metric_space = StateMetricSpace(elements, priors, distances)
         assert metric_space.distance('a', 'a') == 0
         assert metric_space.distance('a', 'b') == 1
         assert metric_space.distance('c', 'b') == 1

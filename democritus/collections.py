@@ -23,7 +23,7 @@ class StateSet(object):
         plt.ylim(ymin=0)
 
 
-class MetricSpace(StateSet):
+class StateMetricSpace(StateSet):
     def __init__(self, elements, priors, metric):
         StateSet.__init__(self, elements, priors)
         self.distances = np.array(metric)

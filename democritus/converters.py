@@ -4,7 +4,7 @@ import numpy as np
 import yaml
 from scipy import stats
 
-from democritus.collections import StateSet, MetricSpace, MessageSet
+from democritus.collections import StateSet, StateMetricSpace, MessageSet
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
 from democritus.factories import SimilarityFunctionFactory
@@ -72,7 +72,7 @@ class StatesFactory(object):
             elements = ElementsFactory.create(elements_spec)
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)
-            return MetricSpace(elements, priors, metric)
+            return StateMetricSpace(elements, priors, metric)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
