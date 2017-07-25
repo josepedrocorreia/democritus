@@ -1,23 +1,32 @@
+from __future__ import division
+
 import numpy as np
 
-from democritus.collections import MessageSet, StateSet, StateMetricSpace
+from democritus.collections import StateSet, StateMetricSpace, ActionSet, ElementSet
 
 
-class TestMessageSet(object):
-    def test_attributes(self):
+class TestElementSet(object):
+    def test_constructor(self):
         elements = [1, 2, 3, 4, 5]
-        message_set = MessageSet(elements)
-        assert hasattr(message_set, 'elements')
-        assert type(message_set.elements) is np.ndarray
-        assert message_set.elements.tolist() == elements
+        element_set = ElementSet(elements)
+        assert hasattr(element_set, 'elements')
+        assert type(element_set.elements) is np.ndarray
+        assert element_set.elements.tolist() == elements
 
     def test_size(self):
-        message_set = MessageSet([1, 2, 3, 4, 5])
-        assert message_set.size() == 5
+        element_set = ElementSet([7, 2, 99, -4])
+        assert element_set.size() == 4
+
+    def test_size(self):
+        element_set = ElementSet([7, 2, 99, -4])
+        assert element_set.index(7) == 0
+        assert element_set.index(2) == 1
+        assert element_set.index(99) == 2
+        assert element_set.index(-4) == 3
 
 
 class TestStateSet(object):
-    def test_attributes(self):
+    def test_constructor(self):
         elements = [1, 2, 3, 4]
         priors = [1 / 4, 1 / 4, 1 / 4, 1 / 4]
         state_set = StateSet(elements, priors)
@@ -28,18 +37,21 @@ class TestStateSet(object):
         assert type(state_set.priors) is np.ndarray
         assert state_set.priors.tolist() == priors
 
-    def test_size(self):
-        elements = [1, 2, 3, 4]
-        priors = [1 / 4, 1 / 4, 1 / 4, 1 / 4]
+    def test_get_prior(self):
+        elements = [7, 2, 99, 4]
+        priors = [1 / 7, 1 / 2, 1 / 99, 1 / 4]
         state_set = StateSet(elements, priors)
-        assert state_set.size() == 4
+        assert state_set.get_prior(7) == 1 / 7
+        assert state_set.get_prior(2) == 1 / 2
+        assert state_set.get_prior(99) == 1 / 99
+        assert state_set.get_prior(4) == 1 / 4
 
 
 class TestStateMetricSpace(object):
-    def test_attributes(self):
+    def test_constructor(self):
         elements = [1, 2, 3, 4]
         priors = [1 / 4, 1 / 4, 1 / 4, 1 / 4]
-        distances = [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]
+        distances = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
         metric_space = StateMetricSpace(elements, priors, distances)
         assert hasattr(metric_space, 'elements')
         assert metric_space.elements.tolist() == elements
@@ -47,13 +59,6 @@ class TestStateMetricSpace(object):
         assert metric_space.priors.tolist() == priors
         assert hasattr(metric_space, 'distances')
         assert metric_space.distances.tolist() == distances
-
-    def test_size(self):
-        elements = ['a', 'b', 'c']
-        priors = [1 / 3, 1 / 3, 1 / 3]
-        distances = [[0, 1, 2], [1, 0, 1], [2, 1, 0]]
-        metric_space = StateMetricSpace(elements, priors, distances)
-        assert metric_space.size() == 3
 
     def test_distance(self):
         elements = ['a', 'b', 'c']
@@ -64,3 +69,23 @@ class TestStateMetricSpace(object):
         assert metric_space.distance('a', 'b') == 1
         assert metric_space.distance('c', 'b') == 1
         assert metric_space.distance('a', 'c') == 2
+
+
+class TestMessageSet(object):
+    def test_from_element_set(self):
+        elements = [7, 2, 99, -4]
+        action_set = ActionSet.from_element_set(ElementSet(elements))
+        assert type(action_set) is ActionSet
+        assert hasattr(action_set, 'elements')
+        assert type(action_set.elements) is np.ndarray
+        assert action_set.elements.tolist() == elements
+
+
+class TestActionSet(object):
+    def test_from_element_set(self):
+        elements = [7, 2, 99, -4]
+        action_set = ActionSet.from_element_set(ElementSet(elements))
+        assert type(action_set) is ActionSet
+        assert hasattr(action_set, 'elements')
+        assert type(action_set.elements) is np.ndarray
+        assert action_set.elements.tolist() == elements

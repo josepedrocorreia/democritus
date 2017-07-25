@@ -3,9 +3,9 @@ from __future__ import division
 import numpy as np
 import pytest
 
-from democritus.collections import MessageSet, StateSet, StateMetricSpace
+from democritus.collections import StateSet, StateMetricSpace, ElementSet
 from democritus.converters import DynamicsFactory, ElementsFactory, SimilarityFunctionReader, StatesFactory, \
-    GameFactory, MessagesFactory, MetricFactory, PriorsFactory, SimulationSpecReader, SimulationMetricConverter
+    GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, SimulationMetricConverter, ElementSetFactory
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
     IncompatibilityInSpecification
@@ -208,30 +208,30 @@ class TestStatesFactory(object):
             StatesFactory.create(states_spec)
 
 
-class TestMessagesFactory(object):
+class TestElementSetFactory(object):
     def test_five_elements(self):
-        messages_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 5}})
-        messages = MessagesFactory.create(messages_spec)
-        assert type(messages) is MessageSet
-        assert messages.size() == 5
-        assert messages.elements.tolist() == [1, 2, 3, 4, 5]
+        element_set_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 5}})
+        element_set = ElementSetFactory.create(element_set_spec)
+        assert type(element_set) is ElementSet
+        assert element_set.size() == 5
+        assert element_set.elements.tolist() == [1, 2, 3, 4, 5]
 
     def test_unknown_type_raises_exception(self):
-        messages_spec = Specification.from_dict({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
+        element_set_spec = Specification.from_dict({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
         with pytest.raises(InvalidValueInSpecification):
-            MessagesFactory.create(messages_spec)
+            ElementSetFactory.create(element_set_spec)
 
     def test_missing_type_defaults_to_set(self):
-        messages_spec = Specification.from_dict({'elements': {'type': 'numbered', 'size': 5}})
-        messages = MessagesFactory.create(messages_spec)
-        assert type(messages) is MessageSet
-        assert messages.size() == 5
-        assert messages.elements.tolist() == [1, 2, 3, 4, 5]
+        element_set_spec = Specification.from_dict({'elements': {'type': 'numbered', 'size': 5}})
+        element_set = ElementSetFactory.create(element_set_spec)
+        assert type(element_set) is ElementSet
+        assert element_set.size() == 5
+        assert element_set.elements.tolist() == [1, 2, 3, 4, 5]
 
     def test_missing_elements_raises_exception(self):
-        messages_spec = Specification.from_dict({'type': 'set'})
+        element_set_spec = Specification.from_dict({'type': 'set'})
         with pytest.raises(MissingFieldInSpecification):
-            MessagesFactory.create(messages_spec)
+            ElementSetFactory.create(element_set_spec)
 
 
 class TestSimilarityFunctionReader(object):

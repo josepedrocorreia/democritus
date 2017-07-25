@@ -4,7 +4,7 @@ import numpy as np
 import yaml
 from scipy import stats
 
-from democritus.collections import StateSet, StateMetricSpace, MessageSet
+from democritus.collections import StateSet, StateMetricSpace, MessageSet, ElementSet
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
 from democritus.factories import SimilarityFunctionFactory
@@ -77,14 +77,14 @@ class StatesFactory(object):
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
-class MessagesFactory(object):
+class ElementSetFactory(object):
     @staticmethod
     def create(spec):
         spec_type = spec.get('type') or 'set'
         if spec_type == 'set':
             elements_spec = spec.get_or_fail('elements')
             elements = ElementsFactory.create(elements_spec)
-            return MessageSet(elements)
+            return ElementSet(elements)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
@@ -111,7 +111,7 @@ class GameFactory(object):
         states_spec = spec.get_or_fail('states')
         states = StatesFactory.create(states_spec)
         messages_spec = spec.get_or_fail('messages')
-        messages = MessagesFactory.create(messages_spec)
+        messages = MessageSet.from_element_set(ElementSetFactory.create(messages_spec))
         utility_spec = spec.get('utility') or Specification.empty()
         utility = SimilarityFunctionReader.create(utility_spec, states)
         if spec_type == 'sim-max':
