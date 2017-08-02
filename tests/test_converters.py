@@ -16,38 +16,53 @@ from democritus.types import StateSet, StateMetricSpace, ElementSet
 
 
 class TestElementsFactory(object):
-    def test_missing_type_defaults_to_numbered(self):
+    def test_missing_type_defaults_to_numbered_labels(self):
         elements_spec = Specification.from_dict({'size': 2})
         elements = ElementsFactory.create(elements_spec)
-        assert elements == [1, 2]
+        assert elements == ['1', '2']
 
-    def test_numbered(self):
-        elements_spec = Specification.from_dict({'type': 'numbered', 'size': 5})
+    def test_numbered_labels(self):
+        elements_spec = Specification.from_dict({'type': 'numbered labels', 'size': 5})
+        elements = ElementsFactory.create(elements_spec)
+        assert elements == ['1', '2', '3', '4', '5']
+
+    def test_numbered_labels_with_prefix(self):
+        elements_spec = Specification.from_dict({'type': 'numbered labels', 'size': 5, 'prefix': 'test'})
+        elements = ElementsFactory.create(elements_spec)
+        assert elements == ['test1', 'test2', 'test3', 'test4', 'test5']
+
+    def test_numeric_range(self):
+        elements_spec = Specification.from_dict({'type': 'numeric range', 'size': 5})
         elements = ElementsFactory.create(elements_spec)
         assert elements == [1, 2, 3, 4, 5]
 
-    def test_interval(self):
-        elements_spec = Specification.from_dict({'type': 'interval', 'size': 5, 'start': 5, 'end': 9})
+    def test_numeric_interval(self):
+        elements_spec = Specification.from_dict({'type': 'numeric interval', 'size': 3, 'start': 5, 'end': 9})
         elements = ElementsFactory.create(elements_spec)
-        assert elements == [5, 6, 7, 8, 9]
+        assert elements == [5, 7, 9]
 
-    def test_numbered_missing_size_raises_exception(self):
-        elements_spec = Specification.from_dict({'type': 'numbered'})
+    def test_numbered_labels_missing_size_raises_exception(self):
+        elements_spec = Specification.from_dict({'type': 'numbered labels'})
         with pytest.raises(MissingFieldInSpecification):
             ElementsFactory.create(elements_spec)
 
-    def test_interval_missing_size_raises_exception(self):
-        elements_spec = Specification.from_dict({'type': 'interval', 'start': 5, 'end': 9})
+    def test_numeric_range_missing_size_raises_exception(self):
+        elements_spec = Specification.from_dict({'type': 'numeric range'})
+        with pytest.raises(MissingFieldInSpecification):
+            ElementsFactory.create(elements_spec)
+
+    def test_numeric_interval_missing_size_raises_exception(self):
+        elements_spec = Specification.from_dict({'type': 'numeric interval', 'start': 5, 'end': 9})
         with pytest.raises(MissingFieldInSpecification):
             ElementsFactory.create(elements_spec)
 
     def test_interval_missing_start_defaults_to_0(self):
-        elements_spec = Specification.from_dict({'type': 'interval', 'size': 5, 'end': 4})
+        elements_spec = Specification.from_dict({'type': 'numeric interval', 'size': 5, 'end': 4})
         elements = ElementsFactory.create(elements_spec)
         assert elements == [0, 1, 2, 3, 4]
 
     def test_interval_missing_end_defaults_to_1(self):
-        elements_spec = Specification.from_dict({'type': 'interval', 'size': 3, 'start': 0.5})
+        elements_spec = Specification.from_dict({'type': 'numeric interval', 'size': 3, 'start': 0.5})
         elements = ElementsFactory.create(elements_spec)
         assert elements == [0.5, 0.75, 1]
 
@@ -82,6 +97,11 @@ class TestPriorsFactory(object):
         priors_spec = Specification.from_dict({'type': '?????????'})
         with pytest.raises(InvalidValueInSpecification):
             PriorsFactory.create(priors_spec, [1])
+
+    def test_normal_with_non_numeric_elements_raises_exception(self):
+        priors_spec = Specification.from_dict({'type': 'normal', 'mean': 3, 'standard deviation': 1})
+        with pytest.raises(ValueError):
+            PriorsFactory.create(priors_spec, ['1', '2', '3', '4', '5'])
 
     def test_missing_mean_defaults_to_estimate(self):
         priors_spec = Specification.from_dict({'type': 'normal', 'standard deviation': 1})
@@ -127,16 +147,16 @@ class TestMetricFactory(object):
 class TestStatesFactory(object):
     def test_set(self):
         states_spec = Specification.from_dict({'type': 'set',
-                                               'elements': {'type': 'numbered', 'size': 3},
+                                               'elements': {'type': 'numbered labels', 'size': 3},
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements == [1, 2, 3]
+        assert states.elements == ['1', '2', '3']
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_metric_space(self):
         states_spec = Specification.from_dict({'type': 'metric space',
-                                               'elements': {'type': 'numbered', 'size': 3},
+                                               'elements': {'type': 'numeric range', 'size': 3},
                                                'priors': {'type': 'uniform'},
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
@@ -148,19 +168,19 @@ class TestStatesFactory(object):
         assert states.distances[2].tolist() == [2, 1, 0]
 
     def test_missing_type_defaults_to_set(self):
-        states_spec = Specification.from_dict({'elements': {'type': 'numbered', 'size': 3},
+        states_spec = Specification.from_dict({'elements': {'type': 'numbered labels', 'size': 3},
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements == [1, 2, 3]
+        assert states.elements == ['1', '2', '3']
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_set_missing_priors_default_to_uniform(self):
         states_spec = Specification.from_dict({'type': 'set',
-                                               'elements': {'type': 'numbered', 'size': 3}})
+                                               'elements': {'type': 'numbered labels', 'size': 3}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements == [1, 2, 3]
+        assert states.elements == ['1', '2', '3']
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_set_missing_elements_raises_exception(self):
@@ -171,7 +191,7 @@ class TestStatesFactory(object):
 
     def test_metric_space_missing_priors_defaults_to_uniform(self):
         states_spec = Specification.from_dict({'type': 'metric space',
-                                               'elements': {'type': 'numbered', 'size': 3},
+                                               'elements': {'type': 'numeric range', 'size': 3},
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateMetricSpace
@@ -183,7 +203,7 @@ class TestStatesFactory(object):
 
     def test_metric_space_missing_metric_defaults_to_euclidean(self):
         states_spec = Specification.from_dict({'type': 'metric space',
-                                               'elements': {'type': 'numbered', 'size': 3},
+                                               'elements': {'type': 'numeric range', 'size': 3},
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateMetricSpace
@@ -202,7 +222,7 @@ class TestStatesFactory(object):
 
     def test_unknown_type_raises_exception(self):
         states_spec = Specification.from_dict({'type': '???????????',
-                                               'elements': {'type': 'numbered', 'size': 3},
+                                               'elements': {'type': 'numbered labels', 'size': 3},
                                                'priors': {'type': 'uniform'}})
         with pytest.raises(InvalidValueInSpecification):
             StatesFactory.create(states_spec)
@@ -210,23 +230,24 @@ class TestStatesFactory(object):
 
 class TestElementSetFactory(object):
     def test_five_elements(self):
-        element_set_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 5}})
+        element_set_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered labels', 'size': 5}})
         element_set = ElementSetFactory.create(element_set_spec)
         assert type(element_set) is ElementSet
         assert element_set.size() == 5
-        assert element_set.elements == [1, 2, 3, 4, 5]
+        assert element_set.elements == ['1', '2', '3', '4', '5']
 
     def test_unknown_type_raises_exception(self):
-        element_set_spec = Specification.from_dict({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
+        element_set_spec = Specification.from_dict(
+            {'type': '????????', 'elements': {'type': 'numbered labels', 'size': 5}})
         with pytest.raises(InvalidValueInSpecification):
             ElementSetFactory.create(element_set_spec)
 
     def test_missing_type_defaults_to_set(self):
-        element_set_spec = Specification.from_dict({'elements': {'type': 'numbered', 'size': 5}})
+        element_set_spec = Specification.from_dict({'elements': {'type': 'numbered labels', 'size': 5}})
         element_set = ElementSetFactory.create(element_set_spec)
         assert type(element_set) is ElementSet
         assert element_set.size() == 5
-        assert element_set.elements == [1, 2, 3, 4, 5]
+        assert element_set.elements == ['1', '2', '3', '4', '5']
 
     def test_missing_elements_raises_exception(self):
         element_set_spec = Specification.from_dict({'type': 'set'})
@@ -262,7 +283,7 @@ class TestBivariateFunctionReader(object):
         assert np.round(func[2], decimals=3).tolist() == [0, 0, 1]
 
     def test_nosofsky_without_distance_raises_exception(self):
-        states_spec_set = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 3}})
+        states_spec_set = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered labels', 'size': 3}})
         states_set = StatesFactory.create(states_spec_set)
         utility_spec = Specification.from_dict({'type': 'nosofsky', 'decay': 2})
         with pytest.raises(IncompatibilityInSpecification):
@@ -279,8 +300,8 @@ class TestBivariateFunctionReader(object):
 class TestGameFactory(object):
     def test_sim_max_3_5(self):
         game_spec = Specification.from_dict({'type': 'sim-max',
-                                             'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                             'messages': {'elements': {'type': 'numbered', 'size': 5}}})
+                                             'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
         game = GameFactory.create(game_spec)
         assert type(game) is SimMaxGame
         assert hasattr(game, 'states')
@@ -291,27 +312,27 @@ class TestGameFactory(object):
         assert game.actions.size() == 3
 
     def test_missing_type_defaults_to_sim_max(self):
-        game_spec = Specification.from_dict({'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                             'messages': {'elements': {'type': 'numbered', 'size': 5}}})
+        game_spec = Specification.from_dict({'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
         game = GameFactory.create(game_spec)
         assert type(game) is SimMaxGame
 
     def test_missing_states_raises_exception(self):
         game_spec = Specification.from_dict({'type': 'sim-max',
-                                             'messages': {'elements': {'type': 'numbered', 'size': 5}}})
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
         with pytest.raises(MissingFieldInSpecification):
             GameFactory.create(game_spec)
 
     def test_missing_messages_raises_exception(self):
         game_spec = Specification.from_dict({'type': 'sim-max',
-                                             'states': {'elements': {'type': 'numbered', 'size': 3}}})
+                                             'states': {'elements': {'type': 'numbered labels', 'size': 3}}})
         with pytest.raises(MissingFieldInSpecification):
             GameFactory.create(game_spec)
 
     def test_unknown_type_raises_exception(self):
         game_spec = Specification.from_dict({'type': '????????????',
-                                             'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                             'messages': {'elements': {'type': 'numbered', 'size': 5}}})
+                                             'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
         with pytest.raises(InvalidValueInSpecification):
             GameFactory.create(game_spec)
 
@@ -368,8 +389,10 @@ class TestSimulationMetricConverter(object):
 class TestSimulationSpecReader(object):
     def test_read_sim_max_3_5_replicator_with_metrics(self):
         simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                            'messages': {'elements': {'type': 'numbered', 'size': 5}}},
+                                                            'states': {
+                                                                'elements': {'type': 'numbered labels', 'size': 3}},
+                                                            'messages': {
+                                                                'elements': {'type': 'numbered labels', 'size': 5}}},
                                                    'dynamics': {'type': 'replicator'},
                                                    'metrics': ['expected utility']})
         simulation = SimulationSpecReader.read(simulation_spec)
@@ -386,15 +409,19 @@ class TestSimulationSpecReader(object):
 
     def test_read_missing_dynamics_throws_exception(self):
         simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                            'messages': {'elements': {'type': 'numbered', 'size': 5}}}})
+                                                            'states': {
+                                                                'elements': {'type': 'numbered labels', 'size': 3}},
+                                                            'messages': {
+                                                                'elements': {'type': 'numbered labels', 'size': 5}}}})
         with pytest.raises(MissingFieldInSpecification):
             SimulationSpecReader.read(simulation_spec)
 
     def test_read_missing_metrics_throws_exception(self):
         simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {'elements': {'type': 'numbered', 'size': 3}},
-                                                            'messages': {'elements': {'type': 'numbered', 'size': 5}}},
+                                                            'states': {
+                                                                'elements': {'type': 'numbered labels', 'size': 3}},
+                                                            'messages': {
+                                                                'elements': {'type': 'numbered labels', 'size': 5}}},
                                                    'dynamics': {'type': 'replicator'},
                                                    'metrics': ['expected utility']})
         simulation = SimulationSpecReader.read(simulation_spec)

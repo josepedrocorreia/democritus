@@ -4,7 +4,7 @@ game:
   states:
     type: 'metric space'
     elements:
-      type: 'interval'
+      type: 'numeric interval'
       size: 10
       start: 0
       end: 1
@@ -12,7 +12,8 @@ game:
   messages:
     type: 'set'
     elements:
-      type: 'numbered'
+      type: 'numbered labels'
+      prefix: 'm_'
       size: 2
 
   utility:

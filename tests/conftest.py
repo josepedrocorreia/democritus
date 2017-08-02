@@ -11,7 +11,7 @@ from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrat
 
 @pytest.fixture(name='states')
 def fixture_states():
-    states_spec = Specification.from_dict({'type': 'metric space', 'elements': {'type': 'numbered', 'size': 3}})
+    states_spec = Specification.from_dict({'type': 'metric space', 'elements': {'type': 'numeric range', 'size': 3}})
     return StatesFactory.create(states_spec)
 
 
@@ -27,8 +27,8 @@ def fixture_sim_max_game():
 @pytest.fixture(name='game')
 def fixture_game():
     sim_max_2x2_spec = Specification.from_dict({'type': 'sim-max',
-                                                'states': {'elements': {'type': 'numbered', 'size': 2}},
-                                                'messages': {'elements': {'type': 'numbered', 'size': 2}}})
+                                                'states': {'elements': {'type': 'numbered labels', 'size': 2}},
+                                                'messages': {'elements': {'type': 'numbered labels', 'size': 2}}})
     sim_max_2x2 = GameFactory.create(sim_max_2x2_spec)
     return sim_max_2x2
 

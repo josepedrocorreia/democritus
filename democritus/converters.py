@@ -1,5 +1,7 @@
 from __future__ import division
 
+import numbers
+
 import numpy as np
 import yaml
 from scipy import stats
@@ -18,17 +20,22 @@ from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet
 class ElementsFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = spec.get('type') or 'numbered'
-        if spec_type == 'numbered':
+        spec_type = spec.get('type') or 'numbered labels'
+        if spec_type == 'numbered labels':
             size = spec.get_or_fail('size')
-            values = np.arange(1, size + 1)
-            return list(values)
-        elif spec_type == 'interval':
+            prefix = spec.get('prefix') or ''
+            values = [prefix + str(number) for number in np.arange(1, size + 1)]
+            return values
+        elif spec_type == 'numeric range':
+            size = spec.get_or_fail('size')
+            values = list(np.arange(1, size + 1))
+            return values
+        elif spec_type == 'numeric interval':
             size = spec.get_or_fail('size')
             start = spec.get('start') or 0
             end = spec.get('end') or 1
-            values = np.linspace(start=start, stop=end, num=size)
-            return list(values)
+            values = list(np.linspace(start=start, stop=end, num=size))
+            return values
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
@@ -38,8 +45,10 @@ class PriorsFactory(object):
     def create(spec, elements):
         spec_type = spec.get('type') or 'uniform'
         if spec_type == 'uniform':
-            return stats.uniform.pdf(elements, scale=len(elements))
+            return stats.uniform.pdf(list(range(len(elements))), scale=len(elements))
         elif spec_type == 'normal':
+            if not isinstance(elements[0], numbers.Number):
+                raise ValueError('Priors type \'normal\' requires numeric elements')
             mean = spec.get('mean') or np.mean(elements)
             standard_deviation = spec.get('standard deviation') or np.std(elements, ddof=1)
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)

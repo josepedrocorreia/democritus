@@ -82,9 +82,10 @@ class SenderStrategy(BivariateFunction):
         self.messages = messages
 
     def plot(self, axis):
-        # TODO: Use names of states and messages
         for m in range(self.messages.size()):
-            axis.plot(self.states.elements, self.values[:, m], label='$m_' + str(m + 1) + '$', marker='.')
+            axis.plot(self.states.elements, self.values[:, m],
+                      label='$' + str(self.messages.elements[m]) + '$',
+                      marker='.')
         axis.set_ylim(-0.1, 1.1)
         axis.legend(loc='lower left')
 
@@ -97,8 +98,9 @@ class ReceiverStrategy(BivariateFunction):
         self.actions = actions
 
     def plot(self, axis):
-        # TODO: Use names of messages and actions
         for m in range(self.messages.size()):
-            axis.plot(self.actions.elements, self.values[m, :], label='$m_' + str(m + 1) + '$', marker='.')
+            axis.plot(self.actions.elements, self.values[m, :],
+                      label='$' + str(self.messages.elements[m]) + '$',
+                      marker='.')
         axis.set_ylim(ymin=0)
         axis.legend(loc='lower left')
