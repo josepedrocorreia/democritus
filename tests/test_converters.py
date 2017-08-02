@@ -19,17 +19,17 @@ class TestElementsFactory(object):
     def test_missing_type_defaults_to_numbered(self):
         elements_spec = Specification.from_dict({'size': 2})
         elements = ElementsFactory.create(elements_spec)
-        assert elements.tolist() == [1, 2]
+        assert elements == [1, 2]
 
     def test_numbered(self):
         elements_spec = Specification.from_dict({'type': 'numbered', 'size': 5})
         elements = ElementsFactory.create(elements_spec)
-        assert elements.tolist() == [1, 2, 3, 4, 5]
+        assert elements == [1, 2, 3, 4, 5]
 
     def test_interval(self):
         elements_spec = Specification.from_dict({'type': 'interval', 'size': 5, 'start': 5, 'end': 9})
         elements = ElementsFactory.create(elements_spec)
-        assert elements.tolist() == [5, 6, 7, 8, 9]
+        assert elements == [5, 6, 7, 8, 9]
 
     def test_numbered_missing_size_raises_exception(self):
         elements_spec = Specification.from_dict({'type': 'numbered'})
@@ -44,12 +44,12 @@ class TestElementsFactory(object):
     def test_interval_missing_start_defaults_to_0(self):
         elements_spec = Specification.from_dict({'type': 'interval', 'size': 5, 'end': 4})
         elements = ElementsFactory.create(elements_spec)
-        assert elements.tolist() == [0, 1, 2, 3, 4]
+        assert elements == [0, 1, 2, 3, 4]
 
     def test_interval_missing_end_defaults_to_1(self):
         elements_spec = Specification.from_dict({'type': 'interval', 'size': 3, 'start': 0.5})
         elements = ElementsFactory.create(elements_spec)
-        assert elements.tolist() == [0.5, 0.75, 1]
+        assert elements == [0.5, 0.75, 1]
 
     def test_unknown_type_raises_exception(self):
         elements_spec = Specification.from_dict({'type': '????????'})
@@ -131,7 +131,7 @@ class TestStatesFactory(object):
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_metric_space(self):
@@ -141,7 +141,7 @@ class TestStatesFactory(object):
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateMetricSpace
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]
         assert states.distances[1].tolist() == [1, 0, 1]
@@ -152,7 +152,7 @@ class TestStatesFactory(object):
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_set_missing_priors_default_to_uniform(self):
@@ -160,7 +160,7 @@ class TestStatesFactory(object):
                                                'elements': {'type': 'numbered', 'size': 3}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateSet
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
 
     def test_set_missing_elements_raises_exception(self):
@@ -175,7 +175,7 @@ class TestStatesFactory(object):
                                                'metric': {'type': 'euclidean'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateMetricSpace
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]
         assert states.distances[1].tolist() == [1, 0, 1]
@@ -187,7 +187,7 @@ class TestStatesFactory(object):
                                                'priors': {'type': 'uniform'}})
         states = StatesFactory.create(states_spec)
         assert type(states) is StateMetricSpace
-        assert states.elements.tolist() == [1, 2, 3]
+        assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
         assert states.distances[0].tolist() == [0, 1, 2]
         assert states.distances[1].tolist() == [1, 0, 1]
@@ -214,7 +214,7 @@ class TestElementSetFactory(object):
         element_set = ElementSetFactory.create(element_set_spec)
         assert type(element_set) is ElementSet
         assert element_set.size() == 5
-        assert element_set.elements.tolist() == [1, 2, 3, 4, 5]
+        assert element_set.elements == [1, 2, 3, 4, 5]
 
     def test_unknown_type_raises_exception(self):
         element_set_spec = Specification.from_dict({'type': '????????', 'elements': {'type': 'numbered', 'size': 5}})
@@ -226,7 +226,7 @@ class TestElementSetFactory(object):
         element_set = ElementSetFactory.create(element_set_spec)
         assert type(element_set) is ElementSet
         assert element_set.size() == 5
-        assert element_set.elements.tolist() == [1, 2, 3, 4, 5]
+        assert element_set.elements == [1, 2, 3, 4, 5]
 
     def test_missing_elements_raises_exception(self):
         element_set_spec = Specification.from_dict({'type': 'set'})

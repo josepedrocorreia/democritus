@@ -21,12 +21,14 @@ class ElementsFactory(object):
         spec_type = spec.get('type') or 'numbered'
         if spec_type == 'numbered':
             size = spec.get_or_fail('size')
-            return np.arange(1, size + 1)
+            values = np.arange(1, size + 1)
+            return list(values)
         elif spec_type == 'interval':
             size = spec.get_or_fail('size')
             start = spec.get('start') or 0
             end = spec.get('end') or 1
-            return np.linspace(start=start, stop=end, num=size)
+            values = np.linspace(start=start, stop=end, num=size)
+            return list(values)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 

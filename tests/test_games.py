@@ -12,4 +12,4 @@ class TestGame(object):
 class TestSimMaxGame(object):
     def test_sim_max_game_actions_equal_states(self, sim_max_game):
         game = sim_max_game
-        assert game.states.elements.tolist() == game.actions.elements.tolist()
+        assert game.states.elements == game.actions.elements

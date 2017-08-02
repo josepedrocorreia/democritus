@@ -5,13 +5,13 @@ from democritus import utils
 
 class ElementSet(object):
     def __init__(self, elements):
-        self.elements = np.array(elements)
+        self.elements = elements
 
     def size(self):
         return len(self.elements)
 
     def index(self, element):
-        return list(self.elements).index(element)
+        return self.elements.index(element)
 
 
 class StateSet(ElementSet):

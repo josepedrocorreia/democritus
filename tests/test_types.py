@@ -10,14 +10,14 @@ class TestElementSet(object):
         elements = [1, 2, 3, 4, 5]
         element_set = ElementSet(elements)
         assert hasattr(element_set, 'elements')
-        assert type(element_set.elements) is np.ndarray
-        assert element_set.elements.tolist() == elements
+        assert type(element_set.elements) is list
+        assert element_set.elements == elements
 
     def test_size(self):
         element_set = ElementSet([7, 2, 99, -4])
         assert element_set.size() == 4
 
-    def test_size(self):
+    def test_index(self):
         element_set = ElementSet([7, 2, 99, -4])
         assert element_set.index(7) == 0
         assert element_set.index(2) == 1
@@ -31,8 +31,8 @@ class TestStateSet(object):
         priors = [1 / 4, 1 / 4, 1 / 4, 1 / 4]
         state_set = StateSet(elements, priors)
         assert hasattr(state_set, 'elements')
-        assert type(state_set.elements) is np.ndarray
-        assert state_set.elements.tolist() == elements
+        assert type(state_set.elements) is list
+        assert state_set.elements == elements
         assert hasattr(state_set, 'priors')
         assert type(state_set.priors) is np.ndarray
         assert state_set.priors.tolist() == priors
@@ -54,7 +54,7 @@ class TestStateMetricSpace(object):
         distances = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
         metric_space = StateMetricSpace(elements, priors, distances)
         assert hasattr(metric_space, 'elements')
-        assert metric_space.elements.tolist() == elements
+        assert metric_space.elements == elements
         assert hasattr(metric_space, 'priors')
         assert metric_space.priors.tolist() == priors
         assert hasattr(metric_space, 'distances')
@@ -77,8 +77,8 @@ class TestMessageSet(object):
         action_set = ActionSet.from_element_set(ElementSet(elements))
         assert type(action_set) is ActionSet
         assert hasattr(action_set, 'elements')
-        assert type(action_set.elements) is np.ndarray
-        assert action_set.elements.tolist() == elements
+        assert type(action_set.elements) is list
+        assert action_set.elements == elements
 
 
 class TestActionSet(object):
@@ -87,5 +87,5 @@ class TestActionSet(object):
         action_set = ActionSet.from_element_set(ElementSet(elements))
         assert type(action_set) is ActionSet
         assert hasattr(action_set, 'elements')
-        assert type(action_set.elements) is np.ndarray
-        assert action_set.elements.tolist() == elements
+        assert type(action_set.elements) is list
+        assert action_set.elements == elements
