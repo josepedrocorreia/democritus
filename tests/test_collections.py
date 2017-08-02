@@ -2,7 +2,7 @@ from __future__ import division
 
 import numpy as np
 
-from democritus.collections import StateSet, StateMetricSpace, ActionSet, ElementSet
+from democritus.types import StateSet, StateMetricSpace, ActionSet, ElementSet
 
 
 class TestElementSet(object):

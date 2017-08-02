@@ -3,8 +3,7 @@ from __future__ import division
 import numpy as np
 import pytest
 
-from democritus.collections import StateSet, StateMetricSpace, ElementSet
-from democritus.converters import DynamicsFactory, ElementsFactory, SimilarityFunctionReader, StatesFactory, \
+from democritus.converters import DynamicsFactory, ElementsFactory, BivariateFunctionReader, StatesFactory, \
     GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, SimulationMetricConverter, ElementSetFactory
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
@@ -13,6 +12,7 @@ from democritus.games import SimMaxGame
 from democritus.metrics import ExpectedUtilityMetric, ReceiverNormalizedEntropyMetric, \
     SenderNormalizedEntropyMetric
 from democritus.specification import Specification
+from democritus.types import StateSet, StateMetricSpace, ElementSet
 
 
 class TestElementsFactory(object):
@@ -234,46 +234,46 @@ class TestElementSetFactory(object):
             ElementSetFactory.create(element_set_spec)
 
 
-class TestSimilarityFunctionReader(object):
+class TestBivariateFunctionReader(object):
     def test_create_identity(self, states):
-        similarity_spec = Specification.from_dict({'type': 'identity'})
-        similarity = SimilarityFunctionReader.create(similarity_spec, states)
-        assert np.round(similarity[0], decimals=3).tolist() == [1, 0, 0]
-        assert np.round(similarity[1], decimals=3).tolist() == [0, 1, 0]
-        assert np.round(similarity[2], decimals=3).tolist() == [0, 0, 1]
+        func_spec = Specification.from_dict({'type': 'identity'})
+        func = BivariateFunctionReader.create(func_spec, states)
+        assert np.round(func[0], decimals=3).tolist() == [1, 0, 0]
+        assert np.round(func[1], decimals=3).tolist() == [0, 1, 0]
+        assert np.round(func[2], decimals=3).tolist() == [0, 0, 1]
 
     def test_create_nosofsky(self, states):
-        similarity_spec = Specification.from_dict({'type': 'nosofsky', 'decay': 2})
-        similarity = SimilarityFunctionReader.create(similarity_spec, states)
-        assert np.round(similarity[0], decimals=3).tolist() == [1, 0.779, 0.368]
-        assert np.round(similarity[1], decimals=3).tolist() == [0.779, 1, 0.779]
-        assert np.round(similarity[2], decimals=3).tolist() == [0.368, 0.779, 1]
+        func_spec = Specification.from_dict({'type': 'nosofsky', 'decay': 2})
+        func = BivariateFunctionReader.create(func_spec, states)
+        assert np.round(func[0], decimals=3).tolist() == [1, 0.779, 0.368]
+        assert np.round(func[1], decimals=3).tolist() == [0.779, 1, 0.779]
+        assert np.round(func[2], decimals=3).tolist() == [0.368, 0.779, 1]
 
     def test_unknown_type_raises_exception(self, states):
-        similarity_spec = Specification.from_dict({'type': '???????????'})
+        func_spec = Specification.from_dict({'type': '???????????'})
         with pytest.raises(InvalidValueInSpecification):
-            SimilarityFunctionReader.create(similarity_spec, states)
+            BivariateFunctionReader.create(func_spec, states)
 
     def test_missing_type_defaults_to_identity(self, states):
-        similarity_spec = Specification.from_dict({'decay': 2})
-        similarity = SimilarityFunctionReader.create(similarity_spec, states)
-        assert np.round(similarity[0], decimals=3).tolist() == [1, 0, 0]
-        assert np.round(similarity[1], decimals=3).tolist() == [0, 1, 0]
-        assert np.round(similarity[2], decimals=3).tolist() == [0, 0, 1]
+        func_spec = Specification.from_dict({'decay': 2})
+        func = BivariateFunctionReader.create(func_spec, states)
+        assert np.round(func[0], decimals=3).tolist() == [1, 0, 0]
+        assert np.round(func[1], decimals=3).tolist() == [0, 1, 0]
+        assert np.round(func[2], decimals=3).tolist() == [0, 0, 1]
 
     def test_nosofsky_without_distance_raises_exception(self):
         states_spec_set = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered', 'size': 3}})
         states_set = StatesFactory.create(states_spec_set)
         utility_spec = Specification.from_dict({'type': 'nosofsky', 'decay': 2})
         with pytest.raises(IncompatibilityInSpecification):
-            SimilarityFunctionReader.create(utility_spec, states_set)
+            BivariateFunctionReader.create(utility_spec, states_set)
 
     def test_nosofsky_missing_decay_defaults_to_1(self, states):
-        similarity_spec = Specification.from_dict({'type': 'nosofsky'})
-        similarity = SimilarityFunctionReader.create(similarity_spec, states)
-        assert np.round(similarity[0], decimals=3).tolist() == [1, 0.368, 0.018]
-        assert np.round(similarity[1], decimals=3).tolist() == [0.368, 1, 0.368]
-        assert np.round(similarity[2], decimals=3).tolist() == [0.018, 0.368, 1]
+        func_spec = Specification.from_dict({'type': 'nosofsky'})
+        func = BivariateFunctionReader.create(func_spec, states)
+        assert np.round(func[0], decimals=3).tolist() == [1, 0.368, 0.018]
+        assert np.round(func[1], decimals=3).tolist() == [0.368, 1, 0.368]
+        assert np.round(func[2], decimals=3).tolist() == [0.018, 0.368, 1]
 
 
 class TestGameFactory(object):

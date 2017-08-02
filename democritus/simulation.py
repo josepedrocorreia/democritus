@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from democritus import utils
+from democritus.factories import SenderStrategyFactory, ReceiverStrategyFactory
 
 
 class Simulation(object):
@@ -12,11 +12,11 @@ class Simulation(object):
         self.sender_strategies = []
         self.receiver_strategies = []
         if sender_strategy is None:
-            sender_strategy = utils.make_row_stochastic(np.random.random((game.states.size(), game.messages.size())))
+            sender_strategy = SenderStrategyFactory.create_random(game.states, game.messages)
         if receiver_strategy is None:
-            receiver_strategy = utils.make_row_stochastic(np.random.random((game.messages.size(), game.states.size())))
-        self.sender_strategies.append(np.array(sender_strategy))
-        self.receiver_strategies.append(np.array(receiver_strategy))
+            receiver_strategy = ReceiverStrategyFactory.create_random(game.messages, game.actions)
+        self.sender_strategies.append(sender_strategy)
+        self.receiver_strategies.append(receiver_strategy)
         self.simulation_measurements = []
         if simulation_metrics is not None:
             for metric in simulation_metrics:
@@ -44,8 +44,8 @@ class Simulation(object):
             return False
         previous_sender_strategy = self.get_sender_strategy(self.current_step - 1)
         previous_receiver_strategy = self.get_receiver_strategy(self.current_step - 1)
-        if np.sum(abs(self.get_current_sender_strategy() - previous_sender_strategy)) < 0.01 \
-                and np.sum(abs(self.get_current_receiver_strategy() - previous_receiver_strategy)) < 0.01:
+        if np.sum(abs(self.get_current_sender_strategy().values - previous_sender_strategy.values)) < 0.01 \
+                and np.sum(abs(self.get_current_receiver_strategy().values - previous_receiver_strategy.values)) < 0.01:
             return True
         else:
             return False
@@ -89,32 +89,24 @@ class Simulation(object):
 
         plt.clf()
 
-        plt.subplot2grid(plot_grid_shape, (0, 0), colspan=states_plot_span)
-        plt.title('Priors')
-        self.game.states.plot()
+        ax1 = plt.subplot2grid(plot_grid_shape, (0, 0), colspan=states_plot_span)
+        ax1.set_title('Priors')
+        self.game.states.plot(ax1)
 
-        plt.subplot2grid(plot_grid_shape, (0, states_plot_span), colspan=utility_plot_span)
-        plt.imshow(self.game.utility, origin='upper', interpolation='none')
-        plt.title('Utility')
-        plt.subplot2grid(plot_grid_shape, (0, states_plot_span + utility_plot_span), colspan=utility_plot_span)
-        plt.imshow(self.game.similarity, origin='upper', interpolation='none')
-        plt.title('Similarity')
+        ax2 = plt.subplot2grid(plot_grid_shape, (0, states_plot_span), colspan=utility_plot_span)
+        ax2.set_title('Utility')
+        self.game.utility.plot(ax2)
+        ax3 = plt.subplot2grid(plot_grid_shape, (0, states_plot_span + utility_plot_span), colspan=utility_plot_span)
+        ax3.set_title('Similarity')
+        self.game.similarity.plot(ax3)
 
-        plt.subplot2grid(plot_grid_shape, (1, 0), colspan=strategy_plot_span)
-        sender_strategy = self.get_current_sender_strategy()
-        for m in range(self.game.messages.size()):
-            plt.plot(self.game.states.elements, sender_strategy[:, m], label='$m_' + str(m + 1) + '$', marker='.')
-        plt.ylim(-0.1, 1.1)
-        plt.legend(loc='lower left')
-        plt.title('Sender strategy')
+        ax4 = plt.subplot2grid(plot_grid_shape, (1, 0), colspan=strategy_plot_span)
+        ax4.set_title('Sender strategy')
+        self.get_current_sender_strategy().plot(ax4)
 
-        plt.subplot2grid(plot_grid_shape, (1, strategy_plot_span), colspan=strategy_plot_span)
-        receiver_strategy = self.get_current_receiver_strategy()
-        for m in range(self.game.messages.size()):
-            plt.plot(self.game.states.elements, receiver_strategy[m, :], label='$m_' + str(m + 1) + '$', marker='.')
-        plt.ylim(ymin=0)
-        plt.legend(loc='lower left')
-        plt.title('Receiver strategy')
+        ax5 = plt.subplot2grid(plot_grid_shape, (1, strategy_plot_span), colspan=strategy_plot_span)
+        ax5.set_title('Receiver strategy')
+        self.get_current_receiver_strategy().plot(ax5)
 
         for i in range(n_metrics):
             # TODO: make this more readable

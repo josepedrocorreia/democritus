@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from democritus.collections import StateSet, MessageSet
 from democritus.converters import StatesFactory, GameFactory, DynamicsFactory
 from democritus.games import SimMaxGame
 from democritus.metrics import ExpectedUtilityMetric
 from democritus.simulation import Simulation
 from democritus.specification import Specification
+from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrategy
 
 
 @pytest.fixture(name='states')
@@ -41,22 +41,22 @@ def fixture_dynamics():
 
 @pytest.fixture(name='converged_simulation')
 def fixture_converged_simulation(game, dynamics):
-    sender_strategy = [[1, 0], [0, 1]]
-    receiver_strategy = [[1, 0], [0, 1]]
+    sender_strategy = SenderStrategy(game.states, game.messages, [[1, 0], [0, 1]])
+    receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[1, 0], [0, 1]])
     return Simulation(game, dynamics, sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)
 
 
 @pytest.fixture(name='almost_converged_simulation')
 def fixture_almost_converged_simulation(game, dynamics):
-    sender_strategy = [[0.9, 0.1], [0.05, 0.95]]
-    receiver_strategy = [[0.95, 0.05], [0.13, 0.87]]
+    sender_strategy = SenderStrategy(game.states, game.messages, [[0.9, 0.1], [0.05, 0.95]])
+    receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[0.95, 0.05], [0.13, 0.87]])
     return Simulation(game, dynamics, sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)
 
 
 @pytest.fixture(name='almost_converged_simulation_with_eu_metric')
 def fixture_almost_converged_simulation_with_eu_metric(game, dynamics):
-    sender_strategy = [[0.9, 0.1], [0.05, 0.95]]
-    receiver_strategy = [[0.95, 0.05], [0.13, 0.87]]
+    sender_strategy = SenderStrategy(game.states, game.messages, [[0.9, 0.1], [0.05, 0.95]])
+    receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[0.95, 0.05], [0.13, 0.87]])
     simulation_metrics = [ExpectedUtilityMetric()]
     return Simulation(game, dynamics, simulation_metrics=simulation_metrics,
                       sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)

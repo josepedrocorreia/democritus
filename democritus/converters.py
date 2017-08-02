@@ -4,15 +4,15 @@ import numpy as np
 import yaml
 from scipy import stats
 
-from democritus.collections import StateSet, StateMetricSpace, MessageSet, ElementSet
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
-from democritus.factories import SimilarityFunctionFactory
+from democritus.factories import BivariateFunctionFactory
 from democritus.games import SimMaxGame
 from democritus.metrics import ExpectedUtilityMetric, SenderNormalizedEntropyMetric, \
     ReceiverNormalizedEntropyMetric
 from democritus.simulation import Simulation
 from democritus.specification import Specification
+from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet
 
 
 class ElementsFactory(object):
@@ -89,17 +89,17 @@ class ElementSetFactory(object):
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
-class SimilarityFunctionReader(object):
+class BivariateFunctionReader(object):
     @staticmethod
     def create(spec, states):
         spec_type = spec.get('type') or 'identity'
         if spec_type == 'identity':
-            return SimilarityFunctionFactory.create_identity(states.size())
+            return BivariateFunctionFactory.create_identity(states.size())
         if spec_type == 'nosofsky':
             decay = spec.get('decay') or 1
             if not hasattr(states, 'distances'):
                 raise IncompatibilityInSpecification(spec, 'states', 'utility')
-            return SimilarityFunctionFactory.create_nosofsky(states.distances, decay)
+            return BivariateFunctionFactory.create_nosofsky(states.distances, decay)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
@@ -113,10 +113,10 @@ class GameFactory(object):
         messages_spec = spec.get_or_fail('messages')
         messages = MessageSet.from_element_set(ElementSetFactory.create(messages_spec))
         utility_spec = spec.get('utility') or Specification.empty()
-        utility = SimilarityFunctionReader.create(utility_spec, states)
+        utility = BivariateFunctionReader.create(utility_spec, states)
         if spec_type == 'sim-max':
             similarity_spec = spec.get('similarity') or Specification.empty()
-            similarity = SimilarityFunctionReader.create(similarity_spec, states)
+            similarity = BivariateFunctionReader.create(similarity_spec, states)
             imprecise = spec.get('imprecise') or False
             return SimMaxGame(states, messages, utility, similarity, imprecise)
         else:

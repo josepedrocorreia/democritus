@@ -1,7 +1,7 @@
-import numpy as np
 import pytest
 
 from democritus.simulation import Simulation
+from democritus.types import SenderStrategy, ReceiverStrategy
 
 
 class TestSimulation(object):
@@ -10,21 +10,21 @@ class TestSimulation(object):
         assert simulation.current_step == 0
         assert len(simulation.sender_strategies) == 1
         assert len(simulation.receiver_strategies) == 1
-        assert type(simulation.get_current_sender_strategy()) is np.ndarray
-        assert type(simulation.get_current_receiver_strategy()) is np.ndarray
+        assert type(simulation.get_current_sender_strategy()) is SenderStrategy
+        assert type(simulation.get_current_receiver_strategy()) is ReceiverStrategy
         assert len(simulation.simulation_measurements) == 0
 
     def test_constructor_strategy_parameters(self, game, dynamics):
-        sender_strategy = [[0, 1], [0.5, 0.5]]
-        receiver_strategy = [[0.1, 0.9], [0.1, 0.9]]
+        sender_strategy = SenderStrategy(game.states, game.messages, [[0, 1], [0.5, 0.5]])
+        receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[0.1, 0.9], [0.1, 0.9]])
         new_simulation = Simulation(game, dynamics, sender_strategy=sender_strategy,
                                     receiver_strategy=receiver_strategy)
         assert len(new_simulation.sender_strategies) == 1
         assert len(new_simulation.receiver_strategies) == 1
-        assert type(new_simulation.get_current_sender_strategy()) is np.ndarray
-        assert type(new_simulation.get_current_receiver_strategy()) is np.ndarray
-        assert new_simulation.get_current_sender_strategy().tolist() == sender_strategy
-        assert new_simulation.get_current_receiver_strategy().tolist() == receiver_strategy
+        assert type(new_simulation.get_current_sender_strategy()) is SenderStrategy
+        assert type(new_simulation.get_current_receiver_strategy()) is ReceiverStrategy
+        assert new_simulation.get_current_sender_strategy() == sender_strategy
+        assert new_simulation.get_current_receiver_strategy() == receiver_strategy
 
     def test_step_generates_strategies_and_steps_forward(self, almost_converged_simulation_with_eu_metric):
         simulation = almost_converged_simulation_with_eu_metric
@@ -34,10 +34,10 @@ class TestSimulation(object):
         assert simulation.current_step == 1
         assert len(simulation.sender_strategies) == 2
         assert len(simulation.receiver_strategies) == 2
-        assert simulation.get_current_sender_strategy().tolist() != initial_sender.tolist()
-        assert simulation.get_current_receiver_strategy().tolist() != initial_receiver.tolist()
-        assert simulation.get_sender_strategy(0).tolist() == initial_sender.tolist()
-        assert simulation.get_receiver_strategy(0).tolist() == initial_receiver.tolist()
+        assert simulation.get_current_sender_strategy() != initial_sender
+        assert simulation.get_current_receiver_strategy() != initial_receiver
+        assert simulation.get_sender_strategy(0) == initial_sender
+        assert simulation.get_receiver_strategy(0) == initial_receiver
         assert len(simulation.simulation_measurements[0][1]) == 2
         simulation.step()
         assert simulation.current_step == 2
@@ -65,8 +65,8 @@ class TestSimulation(object):
 
     def test_run_until_converged_with_max_steps(self, game, dynamics):
         # flip-flopping strategies under best response
-        sender_strategy = [[1, 0], [0, 1]]
-        receiver_strategy = [[0, 1], [1, 0]]
+        sender_strategy = SenderStrategy(game.states, game.messages, [[1, 0], [0, 1]])
+        receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[0, 1], [1, 0]])
         simulation = Simulation(game, dynamics, sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)
         simulation.run_until_converged(max_steps=50)
         assert simulation.converged() is False

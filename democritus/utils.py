@@ -10,4 +10,7 @@ def make_stochastic(vector):
 
 
 def make_row_stochastic(matrix):
-    return np.array([make_stochastic(row) for row in matrix])
+    new_matrix = np.array(matrix)
+    for i in range(len(matrix)):
+        new_matrix[i] = make_stochastic(matrix[i])
+    return new_matrix
