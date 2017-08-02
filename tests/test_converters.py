@@ -387,14 +387,40 @@ class TestSimulationMetricConverter(object):
 
 
 class TestSimulationSpecReader(object):
+    def test_read_from_file_sim_max_3_5_with_metrics(self, tmpdir):
+        simulation_spec_yml = '''
+            'game': 
+                'type':
+                    'sim-max'
+                'states':
+                    'elements': 
+                        'type': 'numbered labels'
+                        'size': 3
+                'messages':
+                    'elements': 
+                        'type': 'numbered labels'
+                        'size': 5
+            'dynamics':
+                'type': 'replicator'
+            'metrics':
+                - 'expected utility'
+        '''
+        spec_file = tmpdir.join("test_spec.yml")
+        spec_file.write(simulation_spec_yml)
+        simulation = SimulationSpecReader.read_from_file(str(spec_file))
+        assert type(simulation.game) is SimMaxGame
+        assert type(simulation.dynamics) is ReplicatorDynamics
+        assert len(simulation.simulation_measurements) == 1
+        assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
+        assert len(simulation.simulation_measurements[0][1]) == 1
+
     def test_read_sim_max_3_5_replicator_with_metrics(self):
-        simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {
-                                                                'elements': {'type': 'numbered labels', 'size': 3}},
-                                                            'messages': {
-                                                                'elements': {'type': 'numbered labels', 'size': 5}}},
-                                                   'dynamics': {'type': 'replicator'},
-                                                   'metrics': ['expected utility']})
+        simulation_spec = Specification.from_dict({
+            'game': {'type': 'sim-max',
+                     'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                     'messages': {'elements': {'type': 'numbered labels', 'size': 5}}},
+            'dynamics': {'type': 'replicator'},
+            'metrics': ['expected utility']})
         simulation = SimulationSpecReader.read(simulation_spec)
         assert type(simulation.game) is SimMaxGame
         assert type(simulation.dynamics) is ReplicatorDynamics
@@ -408,25 +434,20 @@ class TestSimulationSpecReader(object):
             SimulationSpecReader.read(simulation_spec)
 
     def test_read_missing_dynamics_throws_exception(self):
-        simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {
-                                                                'elements': {'type': 'numbered labels', 'size': 3}},
-                                                            'messages': {
-                                                                'elements': {'type': 'numbered labels', 'size': 5}}}})
+        simulation_spec = Specification.from_dict({
+            'game': {'type': 'sim-max',
+                     'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                     'messages': {'elements': {'type': 'numbered labels', 'size': 5}}}})
         with pytest.raises(MissingFieldInSpecification):
             SimulationSpecReader.read(simulation_spec)
 
-    def test_read_missing_metrics_throws_exception(self):
-        simulation_spec = Specification.from_dict({'game': {'type': 'sim-max',
-                                                            'states': {
-                                                                'elements': {'type': 'numbered labels', 'size': 3}},
-                                                            'messages': {
-                                                                'elements': {'type': 'numbered labels', 'size': 5}}},
-                                                   'dynamics': {'type': 'replicator'},
-                                                   'metrics': ['expected utility']})
+    def test_read_missing_metrics_defaults_to_none(self):
+        simulation_spec = Specification.from_dict({
+            'game': {'type': 'sim-max',
+                     'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                     'messages': {'elements': {'type': 'numbered labels', 'size': 5}}},
+            'dynamics': {'type': 'replicator'}})
         simulation = SimulationSpecReader.read(simulation_spec)
         assert type(simulation.game) is SimMaxGame
         assert type(simulation.dynamics) is ReplicatorDynamics
-        assert len(simulation.simulation_measurements) == 1
-        assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
-        assert len(simulation.simulation_measurements[0][1]) == 1
+        assert len(simulation.simulation_measurements) == 0

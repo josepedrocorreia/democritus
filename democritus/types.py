@@ -76,7 +76,6 @@ class BivariateFunction(object):
 
 class SenderStrategy(BivariateFunction):
     def __init__(self, states, messages, values):
-        # TODO: validate dimensions
         BivariateFunction.__init__(self, values)
         self.states = states
         self.messages = messages
@@ -92,7 +91,6 @@ class SenderStrategy(BivariateFunction):
 
 class ReceiverStrategy(BivariateFunction):
     def __init__(self, messages, actions, values):
-        # TODO: validate dimensions
         BivariateFunction.__init__(self, values)
         self.messages = messages
         self.actions = actions
