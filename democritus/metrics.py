@@ -7,6 +7,9 @@ class SimulationMetric(object):
     def calculate(self, simulation):
         raise NotImplementedError('Subclasses of SimulationMetric must implement \'calculate\' method')
 
+    def plot(self, measurements, axis):
+        raise NotImplementedError('Subclasses of SimulationMetric must implement \'plot\' method')
+
 
 class ExpectedUtilityMetric(SimulationMetric):
     name = 'Expected utility'
@@ -25,6 +28,12 @@ class ExpectedUtilityMetric(SimulationMetric):
                                        for t in range(game.number_of_states()))
         return expected_utility / maximum_expected_utility
 
+    def plot(self, measurements, axis):
+        axis.set_title(self.name)
+        axis.plot(list(range(len(measurements))), measurements, marker='.')
+        axis.set_ylim(ymin=0)
+        axis.set_xlim(xmin=0)
+
 
 class SenderNormalizedEntropyMetric(SimulationMetric):
     name = 'Sender entropy'
@@ -39,6 +48,12 @@ class SenderNormalizedEntropyMetric(SimulationMetric):
         normalization_factor = game.number_of_states() * np.log(game.number_of_messages())
         return entropy / normalization_factor
 
+    def plot(self, measurements, axis):
+        axis.set_title(self.name)
+        axis.plot(list(range(len(measurements))), measurements, marker='.')
+        axis.set_ylim(ymin=0)
+        axis.set_xlim(xmin=0)
+
 
 class ReceiverNormalizedEntropyMetric(SimulationMetric):
     name = 'Receiver entropy'
@@ -52,3 +67,9 @@ class ReceiverNormalizedEntropyMetric(SimulationMetric):
             for a in range(game.number_of_actions()))
         normalization_factor = game.number_of_messages() * np.log(game.number_of_actions())
         return entropy / normalization_factor
+
+    def plot(self, measurements, axis):
+        axis.set_title(self.name)
+        axis.plot(list(range(len(measurements))), measurements, marker='.')
+        axis.set_ylim(ymin=0)
+        axis.set_xlim(xmin=0)

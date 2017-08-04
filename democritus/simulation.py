@@ -109,15 +109,11 @@ class Simulation(object):
         self.get_current_receiver_strategy().plot(ax5)
 
         for i in range(n_metrics):
-            # TODO: make this more readable
-            plt.subplot2grid(plot_grid_shape, (2, i * metric_plot_span), colspan=metric_plot_span)
-            simulation_measurement = self.simulation_measurements[i]
-            plt.plot(list(range(self.current_step + 1)), simulation_measurement[1], marker='.')
-            plt.ylim(ymin=0)
-            plt.title(simulation_measurement[0].name)
+            axi = plt.subplot2grid(plot_grid_shape, (2, i * metric_plot_span), colspan=metric_plot_span)
+            self.simulation_measurements[i][0].plot(self.simulation_measurements[i][1], axi)
 
         if self.first_plot:
             plt.tight_layout(h_pad=0.5, w_pad=0)
         self.first_plot = False
         plt.show(block=block)
-        plt.pause(0.000001)
+        plt.pause(0.00001)
