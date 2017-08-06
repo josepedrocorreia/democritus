@@ -11,6 +11,11 @@ class TestSimulationMetric(object):
         with pytest.raises(NotImplementedError):
             metric.calculate(simulation)
 
+    def test_plot_raises_exception(self, converged_simulation):
+        metric = SimulationMetric()
+        with pytest.raises(NotImplementedError):
+            metric.plot([], None)
+
 
 class TestExpectedUtilityMetric(object):
     def test_calculate(self, almost_converged_simulation):

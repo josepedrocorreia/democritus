@@ -1,7 +1,61 @@
+from collections import OrderedDict
+
 import pytest
 
-from democritus.simulation import Simulation
+from democritus.metrics import ExpectedUtilityMetric, SenderNormalizedEntropyMetric, ReceiverNormalizedEntropyMetric
+from democritus.simulation import Simulation, SimulationMetricConverter, SimulationMeasurementsCollector
 from democritus.types import SenderStrategy, ReceiverStrategy
+
+
+class TestSimulationMetricConverter(object):
+    def test_create_expected_utility(self):
+        metric = SimulationMetricConverter.create('expected utility')
+        assert type(metric) is ExpectedUtilityMetric
+
+    def test_create_expected_utility_case_insensitive(self):
+        metric = SimulationMetricConverter.create('eXpEcTeD UtIlItY')
+        assert type(metric) is ExpectedUtilityMetric
+
+    def test_create_sender_entropy(self):
+        metric = SimulationMetricConverter.create('sender entropy')
+        assert type(metric) is SenderNormalizedEntropyMetric
+
+    def test_create_receiver_entropy(self):
+        metric = SimulationMetricConverter.create('receiver entropy')
+        assert type(metric) is ReceiverNormalizedEntropyMetric
+
+    def test_create_unknown_metric_throws_exception(self):
+        with pytest.raises(ValueError):
+            SimulationMetricConverter.create('?????????????')
+
+
+class TestSimulationMeasurementsCollector(object):
+    def test_constructor_defaults(self):
+        collector = SimulationMeasurementsCollector([])
+        assert type(collector.metrics) is OrderedDict
+        assert type(collector.measurements) is OrderedDict
+        assert len(collector.metrics) == 0
+        assert len(collector.measurements) == 0
+
+    def test_constructor_with_two_metrics(self):
+        collector = SimulationMeasurementsCollector([ExpectedUtilityMetric.name, SenderNormalizedEntropyMetric.name])
+        assert type(collector.metrics) is OrderedDict
+        assert type(collector.measurements) is OrderedDict
+        assert len(collector.metrics) == 2
+        assert collector.number_of_metrics() == 2
+        assert len(collector.measurements) == 2
+        assert type(collector.get_metric_class(ExpectedUtilityMetric.name)) is ExpectedUtilityMetric
+        assert type(collector.get_metric_class(SenderNormalizedEntropyMetric.name)) is SenderNormalizedEntropyMetric
+        assert collector.get_measurements(ExpectedUtilityMetric.name) == []
+        assert collector.get_measurements(SenderNormalizedEntropyMetric.name) == []
+
+    def test_calculate_all(self, converged_simulation):
+        collector = SimulationMeasurementsCollector([ExpectedUtilityMetric.name, SenderNormalizedEntropyMetric.name])
+        assert len(collector.get_measurements(ExpectedUtilityMetric.name)) == 0
+        assert len(collector.get_measurements(SenderNormalizedEntropyMetric.name)) == 0
+        collector.calculate_all(converged_simulation)
+        assert len(collector.get_measurements(ExpectedUtilityMetric.name)) == 1
+        assert len(collector.get_measurements(SenderNormalizedEntropyMetric.name)) == 1
 
 
 class TestSimulation(object):
@@ -12,7 +66,7 @@ class TestSimulation(object):
         assert len(simulation.receiver_strategies) == 1
         assert type(simulation.get_current_sender_strategy()) is SenderStrategy
         assert type(simulation.get_current_receiver_strategy()) is ReceiverStrategy
-        assert len(simulation.simulation_measurements) == 0
+        assert type(simulation.measurements_collector) is SimulationMeasurementsCollector
 
     def test_constructor_strategy_parameters(self, game, dynamics):
         sender_strategy = SenderStrategy(game.states, game.messages, [[0, 1], [0.5, 0.5]])
@@ -38,12 +92,12 @@ class TestSimulation(object):
         assert simulation.get_current_receiver_strategy() != initial_receiver
         assert simulation.get_sender_strategy(0) == initial_sender
         assert simulation.get_receiver_strategy(0) == initial_receiver
-        assert len(simulation.simulation_measurements[0][1]) == 2
+        assert len(simulation.measurements_collector.measurements[ExpectedUtilityMetric.name.lower()]) == 2
         simulation.step()
         assert simulation.current_step == 2
         assert len(simulation.sender_strategies) == 3
         assert len(simulation.receiver_strategies) == 3
-        assert len(simulation.simulation_measurements[0][1]) == 3
+        assert len(simulation.measurements_collector.measurements[ExpectedUtilityMetric.name.lower()]) == 3
 
     def test_converged(self, almost_converged_simulation):
         simulation = almost_converged_simulation

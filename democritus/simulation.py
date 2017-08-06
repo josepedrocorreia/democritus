@@ -1,7 +1,59 @@
+from collections import OrderedDict
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from democritus.factories import SenderStrategyFactory, ReceiverStrategyFactory
+from democritus.metrics import ExpectedUtilityMetric, SenderNormalizedEntropyMetric, ReceiverNormalizedEntropyMetric
+
+
+class SimulationMetricConverter(object):
+    @staticmethod
+    def create(name):
+        name = name.lower()
+        if name == 'expected utility':
+            return ExpectedUtilityMetric()
+        elif name == 'sender entropy':
+            return SenderNormalizedEntropyMetric()
+        elif name == 'receiver entropy':
+            return ReceiverNormalizedEntropyMetric()
+        else:
+            raise ValueError('Unknown simulation metric with name: %s', name)
+
+
+class SimulationMeasurementsCollector(object):
+    def __init__(self, simulation_metrics):
+        self.metrics = OrderedDict()
+        self.measurements = OrderedDict()
+        for metric_name in simulation_metrics:
+            metric_name = metric_name.lower()
+            self.metrics[metric_name] = SimulationMetricConverter.create(metric_name)
+            self.measurements[metric_name] = []
+
+    def number_of_metrics(self):
+        return len(self.metrics)
+
+    def get_metric_class(self, metric_name):
+        return self.metrics.get(metric_name.lower())
+
+    def get_measurements(self, metric_name):
+        return self.measurements.get(metric_name.lower())
+
+    def calculate_all(self, simulation):
+        for metric_name, metric_class in self.metrics.items():
+            measurements = self.measurements.get(metric_name)
+            new_measurement = metric_class.calculate(simulation)
+            measurements.append(new_measurement)
+            self.measurements[metric_name] = measurements
+
+    def plot(self):
+        metric_names = list(self.metrics.keys())
+        n_metrics = len(metric_names)
+        for i in range(n_metrics):
+            axi = plt.subplot2grid((n_metrics, 1), (i, 0))
+            metric_class = self.metrics.get(metric_names[i])
+            metric_class.plot(self.measurements[metric_names[i]], axi)
+        plt.tight_layout(h_pad=0.5, w_pad=0)
 
 
 class Simulation(object):
@@ -17,13 +69,8 @@ class Simulation(object):
             receiver_strategy = ReceiverStrategyFactory.create_random(game.messages, game.actions)
         self.sender_strategies.append(sender_strategy)
         self.receiver_strategies.append(receiver_strategy)
-        self.simulation_measurements = []
-        if simulation_metrics is not None:
-            for metric in simulation_metrics:
-                measurement = metric.calculate(self)
-                self.simulation_measurements.append((metric, [measurement]))
-        # TODO: Fix differently
-        self.first_plot = True
+        self.measurements_collector = SimulationMeasurementsCollector(simulation_metrics or [])
+        self.measurements_collector.calculate_all(self)
         plt.rcParams['toolbar'] = 'None'
         plt.style.use('seaborn-deep')
 
@@ -61,9 +108,7 @@ class Simulation(object):
         self.receiver_strategies.append(new_receiver_strategy)
         self.current_step += 1
 
-        for metric, measurements in self.simulation_measurements:
-            new_measurement = metric.calculate(self)
-            measurements.append(new_measurement)
+        self.measurements_collector.calculate_all(self)
 
     def run_until_converged(self, max_steps=100, plot_steps=False, block_at_end=False):
         if type(max_steps) is not int:
@@ -78,17 +123,14 @@ class Simulation(object):
             self.plot(block=block_at_end)
 
     def plot(self, block=False):
-        n_metrics = len(self.simulation_measurements)
-        metric_plot_span = 4
-        n_rows = 3 if n_metrics > 0 else 2
-        n_cols = n_metrics * metric_plot_span if n_metrics > 0 else metric_plot_span
-        plot_grid_shape = (n_rows, n_cols)
+        n_rows = 2
+        n_cols = 4
         states_plot_span = n_cols // 2
         utility_plot_span = n_cols // 4
         strategy_plot_span = n_cols // 2
+        plot_grid_shape = (n_rows, n_cols)
 
-        plt.clf()
-
+        plt.figure(0)
         ax1 = plt.subplot2grid(plot_grid_shape, (0, 0), colspan=states_plot_span)
         ax1.set_title('Priors')
         self.game.states.plot(ax1)
@@ -108,12 +150,10 @@ class Simulation(object):
         ax5.set_title('Receiver strategy')
         self.get_current_receiver_strategy().plot(ax5)
 
-        for i in range(n_metrics):
-            axi = plt.subplot2grid(plot_grid_shape, (2, i * metric_plot_span), colspan=metric_plot_span)
-            self.simulation_measurements[i][0].plot(self.simulation_measurements[i][1], axi)
+        plt.figure(1)
+        self.measurements_collector.plot()
 
-        if self.first_plot:
-            plt.tight_layout(h_pad=0.5, w_pad=0)
-        self.first_plot = False
+        plt.figure(0)
+        plt.tight_layout(h_pad=0.5, w_pad=0)
         plt.show(block=block)
         plt.pause(0.00001)

@@ -10,8 +10,6 @@ from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, Quanta
 from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
 from democritus.factories import BivariateFunctionFactory
 from democritus.games import SimMaxGame
-from democritus.metrics import ExpectedUtilityMetric, SenderNormalizedEntropyMetric, \
-    ReceiverNormalizedEntropyMetric
 from democritus.simulation import Simulation
 from democritus.specification import Specification
 from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet
@@ -149,20 +147,6 @@ class DynamicsFactory(object):
             raise InvalidValueInSpecification(spec, 'type', dynamics_type)
 
 
-class SimulationMetricConverter(object):
-    @staticmethod
-    def create(name):
-        name = name.lower()
-        if name == 'expected utility':
-            return ExpectedUtilityMetric()
-        elif name == 'sender entropy':
-            return SenderNormalizedEntropyMetric()
-        elif name == 'receiver entropy':
-            return ReceiverNormalizedEntropyMetric()
-        else:
-            raise ValueError('Unknown simulation metric with name: %s', name)
-
-
 class SimulationSpecReader(object):
     @staticmethod
     def read_from_file(filename):
@@ -175,9 +159,7 @@ class SimulationSpecReader(object):
     def read(spec):
         game_spec = spec.get_or_fail('game')
         dynamics_spec = spec.get_or_fail('dynamics')
-        simulations_metrics_names = spec.get('metrics') or []
+        simulations_metrics = spec.get('metrics') or []
         game = GameFactory.create(game_spec)
         dynamics = DynamicsFactory.create(dynamics_spec)
-        simulations_metrics = [SimulationMetricConverter.create(metric_name) for metric_name in
-                               simulations_metrics_names]
         return Simulation(game, dynamics, simulations_metrics)

@@ -4,13 +4,12 @@ import numpy as np
 import pytest
 
 from democritus.converters import DynamicsFactory, ElementsFactory, BivariateFunctionReader, StatesFactory, \
-    GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, SimulationMetricConverter, ElementSetFactory
+    GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, ElementSetFactory
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
     IncompatibilityInSpecification
 from democritus.games import SimMaxGame
-from democritus.metrics import ExpectedUtilityMetric, ReceiverNormalizedEntropyMetric, \
-    SenderNormalizedEntropyMetric
+from democritus.metrics import ExpectedUtilityMetric
 from democritus.specification import Specification
 from democritus.types import StateSet, StateMetricSpace, ElementSet
 
@@ -364,28 +363,6 @@ class TestDynamicsFactory(object):
             DynamicsFactory.create(dynamics_spec)
 
 
-class TestSimulationMetricConverter(object):
-    def test_create_expected_utility(self):
-        metric = SimulationMetricConverter.create('expected utility')
-        assert type(metric) is ExpectedUtilityMetric
-
-    def test_create_expected_utility_case_insensitive(self):
-        metric = SimulationMetricConverter.create('eXpEcTeD UtIlItY')
-        assert type(metric) is ExpectedUtilityMetric
-
-    def test_create_sender_entropy(self):
-        metric = SimulationMetricConverter.create('sender entropy')
-        assert type(metric) is SenderNormalizedEntropyMetric
-
-    def test_create_receiver_entropy(self):
-        metric = SimulationMetricConverter.create('receiver entropy')
-        assert type(metric) is ReceiverNormalizedEntropyMetric
-
-    def test_create_unknown_metric_throws_exception(self):
-        with pytest.raises(ValueError):
-            SimulationMetricConverter.create('?????????????')
-
-
 class TestSimulationSpecReader(object):
     def test_read_from_file_sim_max_3_5_with_metrics(self, tmpdir):
         simulation_spec_yml = '''
@@ -410,9 +387,9 @@ class TestSimulationSpecReader(object):
         simulation = SimulationSpecReader.read_from_file(str(spec_file))
         assert type(simulation.game) is SimMaxGame
         assert type(simulation.dynamics) is ReplicatorDynamics
-        assert len(simulation.simulation_measurements) == 1
-        assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
-        assert len(simulation.simulation_measurements[0][1]) == 1
+        assert simulation.measurements_collector.number_of_metrics() == 1
+        assert type(simulation.measurements_collector.metrics['expected utility']) is ExpectedUtilityMetric
+        assert len(simulation.measurements_collector.measurements['expected utility']) == 1
 
     def test_read_sim_max_3_5_replicator_with_metrics(self):
         simulation_spec = Specification.from_dict({
@@ -424,9 +401,9 @@ class TestSimulationSpecReader(object):
         simulation = SimulationSpecReader.read(simulation_spec)
         assert type(simulation.game) is SimMaxGame
         assert type(simulation.dynamics) is ReplicatorDynamics
-        assert len(simulation.simulation_measurements) == 1
-        assert type(simulation.simulation_measurements[0][0]) is ExpectedUtilityMetric
-        assert len(simulation.simulation_measurements[0][1]) == 1
+        assert simulation.measurements_collector.number_of_metrics() == 1
+        assert type(simulation.measurements_collector.metrics['expected utility']) is ExpectedUtilityMetric
+        assert len(simulation.measurements_collector.measurements['expected utility']) == 1
 
     def test_read_missing_game_throws_exception(self):
         simulation_spec = Specification.from_dict({'dynamics': {'type': 'replicator'}})
@@ -450,4 +427,4 @@ class TestSimulationSpecReader(object):
         simulation = SimulationSpecReader.read(simulation_spec)
         assert type(simulation.game) is SimMaxGame
         assert type(simulation.dynamics) is ReplicatorDynamics
-        assert len(simulation.simulation_measurements) == 0
+        assert simulation.measurements_collector.number_of_metrics() == 0

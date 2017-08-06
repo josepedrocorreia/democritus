@@ -3,7 +3,6 @@ import pytest
 
 from democritus.converters import StatesFactory, GameFactory, DynamicsFactory
 from democritus.games import SimMaxGame
-from democritus.metrics import ExpectedUtilityMetric
 from democritus.simulation import Simulation
 from democritus.specification import Specification
 from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrategy
@@ -57,6 +56,6 @@ def fixture_almost_converged_simulation(game, dynamics):
 def fixture_almost_converged_simulation_with_eu_metric(game, dynamics):
     sender_strategy = SenderStrategy(game.states, game.messages, [[0.9, 0.1], [0.05, 0.95]])
     receiver_strategy = ReceiverStrategy(game.messages, game.actions, [[0.95, 0.05], [0.13, 0.87]])
-    simulation_metrics = [ExpectedUtilityMetric()]
+    simulation_metrics = ['expected utility']
     return Simulation(game, dynamics, simulation_metrics=simulation_metrics,
                       sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)
