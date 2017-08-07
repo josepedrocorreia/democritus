@@ -59,3 +59,23 @@ def fixture_almost_converged_simulation_with_eu_metric(game, dynamics):
     simulation_metrics = ['expected utility']
     return Simulation(game, dynamics, simulation_metrics=simulation_metrics,
                       sender_strategy=sender_strategy, receiver_strategy=receiver_strategy)
+
+
+@pytest.fixture(name='config_file_name')
+def fixture_config_file_name(tmpdir):
+    simulation_spec_yml = '''
+        'game':
+            'type':
+                'sim-max'
+            'states':
+                'elements':
+                    'size': 3
+            'messages':
+                'elements':
+                    'size': 5
+        'dynamics':
+            'type': 'replicator'
+    '''
+    spec_file = tmpdir.join("test_spec.yml")
+    spec_file.write(simulation_spec_yml)
+    return str(spec_file)
