@@ -92,7 +92,7 @@ class TestPriorsFactory(object):
             0.0
             0.15
             0.5
-            0.35
+            0.35\
         '''
         priors_file = tmpdir.join("test_priors.csv")
         priors_file.write(priors_file_content)
