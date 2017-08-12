@@ -52,7 +52,7 @@ class PriorsFactory(object):
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
         elif spec_type == 'from file':
             file_name = spec.get_or_fail('file')
-            return np.loadtxt(file_name)
+            return np.loadtxt(file_name, delimiter=',')
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
@@ -112,6 +112,9 @@ class BivariateFunctionReader(object):
             if not hasattr(states, 'distances'):
                 raise IncompatibilityInSpecification(spec, 'states', 'utility')
             return BivariateFunctionFactory.create_nosofsky(states.distances, decay)
+        elif spec_type == 'from file':
+            file_name = spec.get_or_fail('file')
+            return BivariateFunctionFactory.read_from_file(file_name)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 

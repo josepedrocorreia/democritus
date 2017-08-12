@@ -292,6 +292,20 @@ class TestBivariateFunctionReader(object):
         assert np.round(func[1], decimals=3).tolist() == [0.779, 1, 0.779]
         assert np.round(func[2], decimals=3).tolist() == [0.368, 0.779, 1]
 
+    def test_create_from_file(self, tmpdir, states):
+        func_file_content = '''
+            0.0,  0.4,  0.6
+            0.15, 0.05, 0.8
+            0.3,  0.3,  0.4\
+        '''
+        func_file = tmpdir.join("test_priors.csv")
+        func_file.write(func_file_content)
+        func_spec = Specification.from_dict({'type': 'from file', 'file': str(func_file)})
+        func = BivariateFunctionReader.create(func_spec, states)
+        assert func[0].tolist() == [0, 0.4, 0.6]
+        assert func[1].tolist() == [0.15, 0.05, 0.8]
+        assert func[2].tolist() == [0.3, 0.3, 0.4]
+
     def test_unknown_type_raises_exception(self, states):
         func_spec = Specification.from_dict({'type': '???????????'})
         with pytest.raises(InvalidValueInSpecification):
@@ -317,6 +331,16 @@ class TestBivariateFunctionReader(object):
         assert np.round(func[0], decimals=3).tolist() == [1, 0.368, 0.018]
         assert np.round(func[1], decimals=3).tolist() == [0.368, 1, 0.368]
         assert np.round(func[2], decimals=3).tolist() == [0.018, 0.368, 1]
+
+    def test_missing_file_raises_exception(self, states):
+        func_spec = Specification.from_dict({'type': 'from file'})
+        with pytest.raises(MissingFieldInSpecification):
+            BivariateFunctionReader.create(func_spec, states)
+
+    def test_unknown_file_raises_exception(self, states):
+        func_spec = Specification.from_dict({'type': 'from file', 'file': 'some-non-existing-file.bat'})
+        with pytest.raises(FileNotFoundError):
+            BivariateFunctionReader.create(func_spec, states)
 
 
 class TestGameFactory(object):

@@ -15,6 +15,10 @@ class BivariateFunctionFactory(object):
     def create_nosofsky(distances, decay):
         return BivariateFunction(np.exp(-(distances ** 2) / (decay ** 2)))
 
+    @staticmethod
+    def read_from_file(file_name):
+        return BivariateFunction(np.loadtxt(file_name, delimiter=','))
+
 
 class SenderStrategyFactory(object):
     @staticmethod
