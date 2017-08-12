@@ -132,7 +132,7 @@ class TestPriorsFactory(object):
 
     def test_unknown_file_raises_exception(self):
         priors_spec = Specification.from_dict({'type': 'from file', 'file': 'some-non-existing-file.bat'})
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(IOError):
             PriorsFactory.create(priors_spec, [1, 2, 3, 4])
 
 
@@ -339,7 +339,7 @@ class TestBivariateFunctionReader(object):
 
     def test_unknown_file_raises_exception(self, states):
         func_spec = Specification.from_dict({'type': 'from file', 'file': 'some-non-existing-file.bat'})
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(IOError):
             BivariateFunctionReader.create(func_spec, states)
 
 
