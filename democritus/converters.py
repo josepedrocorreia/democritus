@@ -50,6 +50,9 @@ class PriorsFactory(object):
             mean = spec.get('mean') or np.mean(elements)
             standard_deviation = spec.get('standard deviation') or np.std(elements, ddof=1)
             return stats.norm.pdf(elements, loc=mean, scale=standard_deviation)
+        elif spec_type == 'from file':
+            file_name = spec.get_or_fail('file')
+            return np.loadtxt(file_name)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 

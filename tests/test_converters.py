@@ -87,6 +87,19 @@ class TestPriorsFactory(object):
         priors_3 = PriorsFactory.create(priors_spec, [1, 2, 3, 4, 5])
         assert np.round(priors_3, decimals=3).tolist() == [0.054, 0.242, 0.399, 0.242, 0.054]
 
+    def test_from_file(self, tmpdir):
+        priors_file_content = '''
+            0.0
+            0.15
+            0.5
+            0.35
+        '''
+        priors_file = tmpdir.join("test_priors.csv")
+        priors_file.write(priors_file_content)
+        priors_spec = Specification.from_dict({'type': 'from file', 'file': str(priors_file)})
+        priors = PriorsFactory.create(priors_spec, [1, 2, 3, 4])
+        assert priors.tolist() == [0.0, 0.15, 0.5, 0.35]
+
     def test_missing_type_defaults_to_uniform(self):
         priors_spec = Specification.empty()
         priors_3 = PriorsFactory.create(priors_spec, [1, 2, 3])
@@ -111,6 +124,16 @@ class TestPriorsFactory(object):
         priors_spec = Specification.from_dict({'type': 'normal', 'mean': 3})
         priors = PriorsFactory.create(priors_spec, [1, 2, 3, 4, 5])
         assert np.round(priors, decimals=3).tolist() == [0.113, 0.207, 0.252, 0.207, 0.113]
+
+    def test_missing_file_raises_exception(self):
+        priors_spec = Specification.from_dict({'type': 'from file'})
+        with pytest.raises(MissingFieldInSpecification):
+            PriorsFactory.create(priors_spec, [1, 2, 3, 4])
+
+    def test_unknown_file_raises_exception(self):
+        priors_spec = Specification.from_dict({'type': 'from file', 'file': 'some-non-existing-file.bat'})
+        with pytest.raises(FileNotFoundError):
+            PriorsFactory.create(priors_spec, [1, 2, 3, 4])
 
 
 class TestMetricFactory(object):
