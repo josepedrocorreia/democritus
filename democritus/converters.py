@@ -12,7 +12,7 @@ from democritus.factories import BivariateFunctionFactory
 from democritus.games import SimMaxGame
 from democritus.simulation import Simulation
 from democritus.specification import Specification
-from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet
+from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet, ActionSet
 
 
 class ElementsFactory(object):
@@ -101,6 +101,20 @@ class ElementSetFactory(object):
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
 
+class MessageSetFactory(object):
+    @staticmethod
+    def create(spec):
+        element_set = ElementSetFactory.create(spec)
+        return MessageSet(element_set.elements)
+
+
+class ActionSetFactory(object):
+    @staticmethod
+    def create(spec):
+        element_set = ElementSetFactory.create(spec)
+        return ActionSet(element_set.elements)
+
+
 class BivariateFunctionReader(object):
     @staticmethod
     def create(spec, states):
@@ -126,7 +140,7 @@ class GameFactory(object):
         states_spec = spec.get_or_fail('states')
         states = StatesFactory.create(states_spec)
         messages_spec = spec.get_or_fail('messages')
-        messages = MessageSet.from_element_set(ElementSetFactory.create(messages_spec))
+        messages = MessageSetFactory.create(messages_spec)
         utility_spec = spec.get('utility') or Specification.empty()
         utility = BivariateFunctionReader.create(utility_spec, states)
         if spec_type == 'sim-max':

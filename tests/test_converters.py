@@ -4,14 +4,15 @@ import numpy as np
 import pytest
 
 from democritus.converters import DynamicsFactory, ElementsFactory, BivariateFunctionReader, StatesFactory, \
-    GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, ElementSetFactory
+    GameFactory, MetricFactory, PriorsFactory, SimulationSpecReader, ElementSetFactory, MessageSetFactory, \
+    ActionSetFactory
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
     IncompatibilityInSpecification
 from democritus.games import SimMaxGame
 from democritus.metrics import ExpectedUtilityMetric
 from democritus.specification import Specification
-from democritus.types import StateSet, StateMetricSpace, ElementSet
+from democritus.types import StateSet, StateMetricSpace, ElementSet, MessageSet, ActionSet
 
 
 class TestElementsFactory(object):
@@ -275,6 +276,24 @@ class TestElementSetFactory(object):
         element_set_spec = Specification.from_dict({'type': 'set'})
         with pytest.raises(MissingFieldInSpecification):
             ElementSetFactory.create(element_set_spec)
+
+
+class TestMessageSetFactory(object):
+    def test_five_elements(self):
+        element_set_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered labels', 'size': 5}})
+        element_set = MessageSetFactory.create(element_set_spec)
+        assert type(element_set) is MessageSet
+        assert element_set.size() == 5
+        assert element_set.elements == ['1', '2', '3', '4', '5']
+
+
+class TestActionSetFactory(object):
+    def test_five_elements(self):
+        element_set_spec = Specification.from_dict({'type': 'set', 'elements': {'type': 'numbered labels', 'size': 5}})
+        element_set = ActionSetFactory.create(element_set_spec)
+        assert type(element_set) is ActionSet
+        assert element_set.size() == 5
+        assert element_set.elements == ['1', '2', '3', '4', '5']
 
 
 class TestBivariateFunctionReader(object):

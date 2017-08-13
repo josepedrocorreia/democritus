@@ -14,32 +14,26 @@ class ElementSet(object):
         return self.elements.index(element)
 
 
-class StateSet(ElementSet):
+class ElementSetWithPriors(ElementSet):
     def __init__(self, elements, priors):
         ElementSet.__init__(self, elements)
-        self.priors = np.array(priors)
+        self.priors = utils.make_stochastic(np.array(priors))
         if len(self.elements) != len(self.priors):
-            raise ValueError(
-                'Number of elements and priors should be the same. '
-                'Supplied %s elements and %s priors.' % (len(self.elements), len(self.priors)))
+            raise ValueError('Number of elements and priors should be the same. '
+                             'Supplied %s elements and %s priors.' % (len(self.elements), len(self.priors)))
 
     def get_prior(self, x):
         x_index = self.index(x)
         return self.priors[x_index]
 
-    def plot(self, axis):
-        axis.plot(self.elements, self.priors, marker='.')
-        axis.set_ylim(bottom=0)
 
-
-class StateMetricSpace(StateSet):
-    def __init__(self, elements, priors, metric):
-        StateSet.__init__(self, elements, priors)
+class MetricSpace(ElementSet):
+    def __init__(self, elements, metric):
+        ElementSet.__init__(self, elements)
         self.distances = np.array(metric)
         if self.distances.shape[0] != len(self.elements) or self.distances.shape[1] != len(self.elements):
-            raise ValueError(
-                'Incorrect dimensions of metric. '
-                'Metric should be square matrix of order %s.' % len(self.elements))
+            raise ValueError('Incorrect dimensions of metric. '
+                             'Metric should be square matrix of order %s.' % len(self.elements))
 
     def distance(self, x, y):
         x_index = self.index(x)
@@ -47,16 +41,24 @@ class StateMetricSpace(StateSet):
         return self.distances[x_index, y_index]
 
 
+class StateSet(ElementSetWithPriors):
+    def plot(self, axis):
+        axis.plot(self.elements, self.priors, marker='.')
+        axis.set_ylim(bottom=0)
+
+
+class StateMetricSpace(StateSet, MetricSpace):
+    def __init__(self, elements, priors, metric):
+        StateSet.__init__(self, elements, priors)
+        MetricSpace.__init__(self, elements, metric)
+
+
 class MessageSet(ElementSet):
-    @staticmethod
-    def from_element_set(element_set):
-        return MessageSet(element_set.elements)
+    pass
 
 
 class ActionSet(ElementSet):
-    @staticmethod
-    def from_element_set(element_set):
-        return ActionSet(element_set.elements)
+    pass
 
 
 class BivariateFunction(object):
