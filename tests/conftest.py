@@ -5,13 +5,23 @@ from democritus.converters import StatesFactory, GameFactory, DynamicsFactory
 from democritus.games import SimMaxGame
 from democritus.simulation import Simulation
 from democritus.specification import Specification
-from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrategy
+from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrategy, ActionSet
 
 
 @pytest.fixture(name='states')
 def fixture_states():
     states_spec = Specification.from_dict({'type': 'metric space', 'elements': {'type': 'numeric range', 'size': 3}})
     return StatesFactory.create(states_spec)
+
+
+@pytest.fixture(name='messages')
+def fixture_messages():
+    return MessageSet(['m1', 'm2'])
+
+
+@pytest.fixture(name='actions')
+def fixture_actions():
+    return ActionSet(['a1', 'a2', 'a3', 'a4'])
 
 
 @pytest.fixture(name='sim_max_game')
