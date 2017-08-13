@@ -138,7 +138,7 @@ class TestPriorsFactory(object):
 
 
 class TestMetricFactory(object):
-    def test_euclidean(self):
+    def test_create_euclidean(self):
         metric_spec = Specification.from_dict({'type': 'euclidean'})
 
         metric_1 = MetricFactory.create(metric_spec, [1])
@@ -153,6 +153,20 @@ class TestMetricFactory(object):
         assert other_metric_3[0].tolist() == [0, 1, 4]
         assert other_metric_3[1].tolist() == [1, 0, 3]
         assert other_metric_3[2].tolist() == [4, 3, 0]
+
+    def test_create_from_file(self, tmpdir):
+        metric_file_content = '''
+            0.0,  0.4,  0.6
+            0.15, 0.05, 0.8
+            0.3,  0.3,  0.4\
+        '''
+        metric_file = tmpdir.join("test_priors.csv")
+        metric_file.write(metric_file_content)
+        metric_spec = Specification.from_dict({'type': 'from file', 'file': str(metric_file)})
+        metric = MetricFactory.create(metric_spec, ['a', 'b', 'c'])
+        assert metric[0].tolist() == [0, 0.4, 0.6]
+        assert metric[1].tolist() == [0.15, 0.05, 0.8]
+        assert metric[2].tolist() == [0.3, 0.3, 0.4]
 
     def test_missing_type_defaults_to_euclidean(self):
         metric_spec = Specification.empty()
