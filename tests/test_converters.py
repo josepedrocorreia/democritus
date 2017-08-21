@@ -9,7 +9,7 @@ from democritus.converters import DynamicsFactory, ElementsFactory, BivariateFun
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
     IncompatibilityInSpecification
-from democritus.games import SimMaxGame
+from democritus.games import SimMaxGame, Game
 from democritus.metrics import ExpectedUtilityMetric
 from democritus.specification import Specification
 from democritus.types import StateSet, StateMetricSpace, ElementSet, MessageSet, ActionSet
@@ -377,7 +377,21 @@ class TestBivariateFunctionReader(object):
 
 
 class TestGameFactory(object):
-    def test_sim_max_3_5(self):
+    def test_create_basic_game_3_4_5(self):
+        game_spec = Specification.from_dict({'type': 'basic',
+                                             'states': {'elements': {'type': 'numbered labels', 'size': 3}},
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 4}},
+                                             'actions': {'elements': {'type': 'numbered labels', 'size': 5}}})
+        game = GameFactory.create(game_spec)
+        assert type(game) is Game
+        assert hasattr(game, 'states')
+        assert game.states.size() == 3
+        assert hasattr(game, 'messages')
+        assert game.messages.size() == 4
+        assert hasattr(game, 'actions')
+        assert game.actions.size() == 5
+
+    def test_create_sim_max_game_3_5(self):
         game_spec = Specification.from_dict({'type': 'sim-max',
                                              'states': {'elements': {'type': 'numbered labels', 'size': 3}},
                                              'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
@@ -390,11 +404,12 @@ class TestGameFactory(object):
         assert hasattr(game, 'actions')
         assert game.actions.size() == 3
 
-    def test_missing_type_defaults_to_sim_max(self):
+    def test_missing_type_defaults_to_basic(self):
         game_spec = Specification.from_dict({'states': {'elements': {'type': 'numbered labels', 'size': 3}},
-                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}}})
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 4}},
+                                             'actions': {'elements': {'type': 'numbered labels', 'size': 5}}})
         game = GameFactory.create(game_spec)
-        assert type(game) is SimMaxGame
+        assert type(game) is Game
 
     def test_missing_states_raises_exception(self):
         game_spec = Specification.from_dict({'type': 'sim-max',

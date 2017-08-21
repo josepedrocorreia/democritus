@@ -9,7 +9,7 @@ from scipy import stats
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
 from democritus.factories import BivariateFunctionFactory
-from democritus.games import SimMaxGame
+from democritus.games import SimMaxGame, Game
 from democritus.simulation import Simulation
 from democritus.specification import Specification
 from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet, ActionSet
@@ -139,18 +139,22 @@ class BivariateFunctionReader(object):
 class GameFactory(object):
     @staticmethod
     def create(spec):
-        spec_type = spec.get('type') or 'sim-max'
+        spec_type = spec.get('type') or 'basic'
         states_spec = spec.get_or_fail('states')
         states = StatesFactory.create(states_spec)
         messages_spec = spec.get_or_fail('messages')
         messages = MessageSetFactory.create(messages_spec)
         utility_spec = spec.get('utility') or Specification.empty()
         utility = BivariateFunctionReader.create(utility_spec, states)
+        imprecise = spec.get('imprecise') or False
         if spec_type == 'sim-max':
             similarity_spec = spec.get('similarity') or Specification.empty()
             similarity = BivariateFunctionReader.create(similarity_spec, states)
-            imprecise = spec.get('imprecise') or False
             return SimMaxGame(states, messages, utility, similarity, imprecise)
+        if spec_type == 'basic':
+            actions_spec = spec.get_or_fail('actions')
+            actions = ActionSetFactory.create(actions_spec)
+            return Game(states, messages, actions, utility)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 
