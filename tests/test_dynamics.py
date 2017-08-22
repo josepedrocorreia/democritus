@@ -35,7 +35,7 @@ class TestReplicatorDynamics(object):
 
     def test_update_sender_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = ReplicatorDynamics()
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])
@@ -44,7 +44,7 @@ class TestReplicatorDynamics(object):
 
     def test_update_receiver_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = ReplicatorDynamics()
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])
@@ -71,7 +71,7 @@ class TestBestResponseDynamics(object):
 
     def test_update_sender_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = BestResponseDynamics()
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])
@@ -80,7 +80,7 @@ class TestBestResponseDynamics(object):
 
     def test_update_receiver_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = BestResponseDynamics()
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])
@@ -107,7 +107,7 @@ class TestQuantalResponseDynamics(object):
 
     def test_update_sender_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = QuantalResponseDynamics(5)
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])
@@ -116,7 +116,7 @@ class TestQuantalResponseDynamics(object):
 
     def test_update_receiver_with_imprecision(self, sim_max_game):
         game = sim_max_game
-        game.imprecise = True
+        game.confusion = game.similarity
         dynamics = QuantalResponseDynamics(5)
         sender_strategy = np.array([[0.3, 0.7], [0.4, 0.6]])
         receiver_strategy = np.array([[0.2, 0.8], [0.9, 0.1]])

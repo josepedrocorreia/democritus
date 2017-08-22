@@ -16,15 +16,13 @@ game:
       prefix: 'm_'
       size: 2
 
-  utility:
-    type: 'nosofsky'
-    decay: 0.1
-
   similarity:
     type: 'nosofsky'
     decay: 0.1
 
-  imprecise: true
+  confusion:
+    type: 'nosofsky'
+    decay: 0.2
 
 dynamics:
   type: 'replicator'

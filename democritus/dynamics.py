@@ -28,8 +28,8 @@ class ReplicatorDynamics(Dynamics):
                 new_sender_strategy[t, m] = sender_strategy[t, m] * \
                                             expected_utility[t, m] * n_messages / sum(expected_utility[t])
         new_sender_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_sender_strategy.values = np.dot(game.similarity, new_sender_strategy.values)
+        if game.confusion is not None:
+            new_sender_strategy.values = np.dot(game.confusion, new_sender_strategy.values)
         new_sender_strategy.make_row_stochastic()
         return new_sender_strategy
 
@@ -46,8 +46,8 @@ class ReplicatorDynamics(Dynamics):
                 new_receiver_strategy[m, t] = receiver_strategy[m, t] * \
                                               (expected_utility[m, t] * n_states + 0) / (sum(expected_utility[m]) + 0)
         new_receiver_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.similarity))
+        if game.confusion is not None:
+            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.confusion))
         new_receiver_strategy.make_row_stochastic()
         return new_receiver_strategy
 
@@ -64,8 +64,8 @@ class BestResponseDynamics(Dynamics):
             for m in range(n_messages):
                 new_sender_strategy[t, m] = 1 if expected_utility[t, m] == max(expected_utility[t]) else 0
         new_sender_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_sender_strategy.values = np.dot(game.similarity, new_sender_strategy.values)
+        if game.confusion is not None:
+            new_sender_strategy.values = np.dot(game.confusion, new_sender_strategy.values)
         new_sender_strategy.make_row_stochastic()
         return new_sender_strategy
 
@@ -81,8 +81,8 @@ class BestResponseDynamics(Dynamics):
             for t in range(n_states):
                 new_receiver_strategy[m, t] = 1 if expected_utility[m, t] == max(expected_utility[m]) else 0
         new_receiver_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.similarity))
+        if game.confusion is not None:
+            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.confusion))
         new_receiver_strategy.make_row_stochastic()
         return new_receiver_strategy
 
@@ -103,8 +103,8 @@ class QuantalResponseDynamics(Dynamics):
                 new_sender_strategy[t, m] = np.exp(self.rationality * expected_utility[t, m]) / \
                                             sum(np.exp(self.rationality * expected_utility[t]))
         new_sender_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_sender_strategy.values = np.dot(game.similarity, new_sender_strategy.values)
+        if game.confusion is not None:
+            new_sender_strategy.values = np.dot(game.confusion, new_sender_strategy.values)
         new_sender_strategy.make_row_stochastic()
         return new_sender_strategy
 
@@ -121,7 +121,7 @@ class QuantalResponseDynamics(Dynamics):
                 new_receiver_strategy[m, t] = np.exp(self.rationality * expected_utility[m, t]) / \
                                               sum(np.exp(self.rationality * expected_utility[m]))
         new_receiver_strategy.make_row_stochastic()
-        if game.imprecise:
-            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.similarity))
+        if game.confusion is not None:
+            new_receiver_strategy.values = np.dot(new_receiver_strategy.values, np.transpose(game.confusion))
         new_receiver_strategy.make_row_stochastic()
         return new_receiver_strategy

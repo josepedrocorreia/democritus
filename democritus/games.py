@@ -2,11 +2,12 @@ import copy
 
 
 class Game(object):
-    def __init__(self, states, messages, actions, utility):
+    def __init__(self, states, messages, actions, utility, confusion=None):
         self.states = states
         self.messages = messages
         self.actions = actions
         self.utility = utility
+        self.confusion = confusion
 
     def number_of_states(self):
         return self.states.size()
@@ -19,8 +20,7 @@ class Game(object):
 
 
 class SimMaxGame(Game):
-    def __init__(self, states, messages, utility, similarity, imprecise):
+    def __init__(self, states, messages, similarity, confusion=None):
         actions = copy.deepcopy(states)
-        Game.__init__(self, states, messages, actions, utility)
+        Game.__init__(self, states, messages, actions, similarity, confusion)
         self.similarity = similarity
-        self.imprecise = imprecise

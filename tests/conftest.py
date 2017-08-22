@@ -29,8 +29,7 @@ def fixture_sim_max_game():
     states = StateSet(['t1', 't2'], [0.6, 0.4])
     messages = MessageSet(['m1', 'm2'])
     similarity = np.array([[2, 0.5], [0.1, 1]])
-    utility = similarity
-    return SimMaxGame(states, messages, utility, similarity, False)
+    return SimMaxGame(states, messages, similarity)
 
 
 @pytest.fixture(name='game')

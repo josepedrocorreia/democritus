@@ -124,9 +124,9 @@ class Simulation(object):
 
     def plot(self, block=False):
         n_rows = 2
-        n_cols = 4
+        n_cols = (4 if self.game.confusion is not None else 2)
         states_plot_span = n_cols // 2
-        utility_plot_span = n_cols // 4
+        utility_plot_span = n_cols // 2 // (2 if self.game.confusion is not None else 1)
         strategy_plot_span = n_cols // 2
         plot_grid_shape = (n_rows, n_cols)
 
@@ -138,17 +138,19 @@ class Simulation(object):
         ax2 = plt.subplot2grid(plot_grid_shape, (0, states_plot_span), colspan=utility_plot_span)
         ax2.set_title('Utility')
         self.game.utility.plot(ax2)
-        ax3 = plt.subplot2grid(plot_grid_shape, (0, states_plot_span + utility_plot_span), colspan=utility_plot_span)
-        ax3.set_title('Similarity')
-        self.game.similarity.plot(ax3)
+        if self.game.confusion is not None:
+            ax4 = plt.subplot2grid(plot_grid_shape, (0, states_plot_span + utility_plot_span),
+                                   colspan=utility_plot_span)
+            ax4.set_title('Confusion')
+            self.game.confusion.plot(ax4)
 
-        ax4 = plt.subplot2grid(plot_grid_shape, (1, 0), colspan=strategy_plot_span)
-        ax4.set_title('Sender strategy')
-        self.get_current_sender_strategy().plot(ax4)
+        ax5 = plt.subplot2grid(plot_grid_shape, (1, 0), colspan=strategy_plot_span)
+        ax5.set_title('Sender strategy')
+        self.get_current_sender_strategy().plot(ax5)
 
-        ax5 = plt.subplot2grid(plot_grid_shape, (1, strategy_plot_span), colspan=strategy_plot_span)
-        ax5.set_title('Receiver strategy')
-        self.get_current_receiver_strategy().plot(ax5)
+        ax6 = plt.subplot2grid(plot_grid_shape, (1, strategy_plot_span), colspan=strategy_plot_span)
+        ax6.set_title('Receiver strategy')
+        self.get_current_receiver_strategy().plot(ax6)
 
         plt.figure(1)
         self.measurements_collector.plot()

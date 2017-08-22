@@ -144,17 +144,18 @@ class GameFactory(object):
         states = StatesFactory.create(states_spec)
         messages_spec = spec.get_or_fail('messages')
         messages = MessageSetFactory.create(messages_spec)
-        utility_spec = spec.get('utility') or Specification.empty()
-        utility = BivariateFunctionReader.create(utility_spec, states)
-        imprecise = spec.get('imprecise') or False
+        confusion_spec = spec.get('confusion') or None
+        confusion = None if confusion_spec is None else BivariateFunctionReader.create(confusion_spec, states)
         if spec_type == 'sim-max':
             similarity_spec = spec.get('similarity') or Specification.empty()
             similarity = BivariateFunctionReader.create(similarity_spec, states)
-            return SimMaxGame(states, messages, utility, similarity, imprecise)
+            return SimMaxGame(states, messages, similarity, confusion)
         if spec_type == 'basic':
+            utility_spec = spec.get('utility') or Specification.empty()
+            utility = BivariateFunctionReader.create(utility_spec, states)
             actions_spec = spec.get_or_fail('actions')
             actions = ActionSetFactory.create(actions_spec)
-            return Game(states, messages, actions, utility)
+            return Game(states, messages, actions, utility, confusion)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 

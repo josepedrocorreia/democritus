@@ -390,6 +390,8 @@ class TestGameFactory(object):
         assert game.messages.size() == 4
         assert hasattr(game, 'actions')
         assert game.actions.size() == 5
+        assert hasattr(game, 'confusion')
+        assert game.confusion is None
 
     def test_create_sim_max_game_3_5(self):
         game_spec = Specification.from_dict({'type': 'sim-max',
@@ -403,6 +405,19 @@ class TestGameFactory(object):
         assert game.messages.size() == 5
         assert hasattr(game, 'actions')
         assert game.actions.size() == 3
+        assert hasattr(game, 'confusion')
+        assert game.confusion is None
+
+    def test_create_sim_max_game_3_5_with_confusion(self):
+        game_spec = Specification.from_dict({'type': 'sim-max',
+                                             'states': {'type': 'metric space',
+                                                        'elements': {'type': 'numeric interval', 'size': 3}},
+                                             'messages': {'elements': {'type': 'numbered labels', 'size': 5}},
+                                             'confusion': {'type': 'nosofsky'}})
+        game = GameFactory.create(game_spec)
+        assert type(game) is SimMaxGame
+        assert hasattr(game, 'confusion')
+        assert game.confusion.values.shape == (3, 3)
 
     def test_missing_type_defaults_to_basic(self):
         game_spec = Specification.from_dict({'states': {'elements': {'type': 'numbered labels', 'size': 3}},
