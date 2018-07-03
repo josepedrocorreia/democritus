@@ -1,0 +1,25 @@
+game:
+  type: 'sim-max'
+
+  states:
+    type: 'wcs munsell palette'
+    elements:
+      type: 'from file'
+      file: 'examples/color-categorization/wcs-munsell-palette.csv'
+    metric:
+      type: 'euclidean'
+      coordinates: ['L', 'a', 'b']
+
+  similarity:
+    type: 'nosofsky'
+    decay: 32
+
+  messages:
+    type: 'set'
+    elements:
+      type: 'numbered labels'
+      prefix: 'm_'
+      size: 3
+
+dynamics:
+  type: 'replicator'

@@ -10,7 +10,15 @@ from democritus.types import StateSet, MessageSet, SenderStrategy, ReceiverStrat
 
 @pytest.fixture(name='states')
 def fixture_states():
-    states_spec = Specification.from_dict({'type': 'metric space', 'elements': {'type': 'numeric range', 'size': 3}})
+    states_spec = Specification.from_dict(
+        {'type': 'metric space', 'elements': {'type': 'numeric range', 'size': 3}, 'metric': {'type': 'euclidean'}})
+    return StatesFactory.create(states_spec)
+
+
+@pytest.fixture(name='wcs_munsell_palette')
+def fixture_wcs_munsell_palette():
+    states_spec = Specification.from_dict(
+        {'type': 'wcs munsell palette', 'elements': {'type': 'numeric range', 'size': 330}})
     return StatesFactory.create(states_spec)
 
 

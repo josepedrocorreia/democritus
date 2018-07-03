@@ -152,8 +152,9 @@ class Simulation(object):
         ax6.set_title('Receiver strategy')
         self.get_current_receiver_strategy().plot(ax6)
 
-        plt.figure(1)
-        self.measurements_collector.plot()
+        if self.measurements_collector.number_of_metrics() > 0:
+            plt.figure(1)
+            self.measurements_collector.plot()
 
         plt.figure(0)
         plt.tight_layout(h_pad=0.5, w_pad=0)

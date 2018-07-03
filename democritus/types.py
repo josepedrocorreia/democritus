@@ -1,3 +1,6 @@
+from builtins import range
+
+import matplotlib.cm as cm
 import numpy as np
 
 from democritus import utils
@@ -51,6 +54,22 @@ class StateMetricSpace(StateSet, MetricSpace):
     def __init__(self, elements, priors, metric):
         StateSet.__init__(self, elements, priors)
         MetricSpace.__init__(self, elements, metric)
+
+
+class WCSMunsellPalette(StateMetricSpace):
+    wcs_values = list('ABCDEFGHIJ')
+    wcs_hue_key = 'wcs.hue'
+    wcs_value_key = 'wcs.value'
+
+    def plot(self, axis):
+        probabilities = np.full((10, 41), np.nan)
+        for chip_index in range(len(self.elements)):
+            chip = self.elements[chip_index]
+            wcs_value_index = WCSMunsellPalette.wcs_values.index(chip[WCSMunsellPalette.wcs_value_key])
+            wcs_hue_index = chip[WCSMunsellPalette.wcs_hue_key]
+            probabilities[wcs_value_index, wcs_hue_index] = self.priors[chip_index]
+        axis.imshow(probabilities, origin='upper', interpolation='none')
+        axis.axis('off')
 
 
 class MessageSet(ElementSet):
@@ -112,6 +131,22 @@ class SenderStrategy(BehavioralStrategy):
         axis.legend(loc='lower left')
 
 
+class WCSMunsellSenderStrategy(SenderStrategy):
+    def plot(self, axis):
+        color_map = cm.get_cmap('Set1')
+        probabilities = np.array([[color_map.colors[0] + (0,)] * 41] * 10)
+        for chip_index in range(len(self.states.elements)):
+            chip = self.states.elements[chip_index]
+            wcs_value_index = WCSMunsellPalette.wcs_values.index(chip[WCSMunsellPalette.wcs_value_key])
+            wcs_hue_index = chip[WCSMunsellPalette.wcs_hue_key]
+            message_index = np.argmax(self.values[chip_index])
+            probability = self.values[chip_index, message_index]
+            color = color_map.colors[message_index] + (probability,)
+            probabilities[wcs_value_index, wcs_hue_index] = color
+        axis.imshow(probabilities, origin='upper', interpolation='none')
+        # axis.axis('off')
+
+
 class ReceiverStrategy(BehavioralStrategy):
     def __init__(self, messages, actions, probabilities):
         BehavioralStrategy.__init__(self, messages, actions, probabilities)
@@ -125,3 +160,19 @@ class ReceiverStrategy(BehavioralStrategy):
                       marker='.')
         axis.set_ylim(ymin=0)
         axis.legend(loc='lower left')
+
+
+class WCSMunsellReceiverStrategy(ReceiverStrategy):
+    def plot(self, axis):
+        color_map = cm.get_cmap('Set1')
+        probabilities = np.array([[color_map.colors[0] + (0,)] * 41] * 10)
+        for chip_index in range(len(self.actions.elements)):
+            chip = self.actions.elements[chip_index]
+            wcs_value_index = WCSMunsellPalette.wcs_values.index(chip[WCSMunsellPalette.wcs_value_key])
+            wcs_hue_index = chip[WCSMunsellPalette.wcs_hue_key]
+            message_index = np.argmax(self.values[:, chip_index])
+            probability = self.values[message_index, chip_index]
+            color = color_map.colors[message_index] + (probability,)
+            probabilities[wcs_value_index, wcs_hue_index] = color
+        axis.imshow(probabilities, origin='upper', interpolation='none')
+        # axis.axis('off')

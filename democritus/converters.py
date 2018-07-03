@@ -3,16 +3,17 @@ from __future__ import division
 import numbers
 
 import numpy as np
+import pandas
 import yaml
 from scipy import stats
 
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
-from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification
+from democritus.exceptions import InvalidValueInSpecification, IncompatibilityInSpecification, SpecificationError
 from democritus.factories import BivariateFunctionFactory
 from democritus.games import SimMaxGame, Game
 from democritus.simulation import Simulation
 from democritus.specification import Specification
-from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet, ActionSet
+from democritus.types import StateSet, StateMetricSpace, MessageSet, ElementSet, ActionSet, WCSMunsellPalette
 
 
 class ElementsFactory(object):
@@ -33,6 +34,12 @@ class ElementsFactory(object):
             start = spec.get('start') or 0
             end = spec.get('end') or 1
             values = list(np.linspace(start=start, stop=end, num=size))
+            return values
+        if spec_type == 'from file':
+            file = spec.get_or_fail('file')
+            values = pandas.read_csv(file).to_dict('records')
+            if len(values) == 0:
+                raise SpecificationError(spec, 'Could not read any elements from file \'%s\'' % str(file))
             return values
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
@@ -60,9 +67,20 @@ class PriorsFactory(object):
 class MetricFactory(object):
     @staticmethod
     def create(spec, elements):
-        spec_type = spec.get('type') or 'euclidean'
+        spec_type = spec.get('type') or 'equidistant'
+        if spec_type == 'equidistant':
+            return 1 - np.eye(len(elements), len(elements))
         if spec_type == 'euclidean':
-            return np.array([[abs(x - y) for y in elements] for x in elements])
+            if isinstance(elements[0], numbers.Number):
+                return np.array([[abs(x - y) for y in elements] for x in elements])
+            elif isinstance(elements[0], dict):
+                coords_keys = spec.get_or_fail('coordinates')
+                try:
+                    return np.array([[np.sqrt(np.sum(np.square(np.array([x[k] for k in coords_keys]) -
+                                                               np.array([y[k] for k in coords_keys]))))
+                                      for y in elements] for x in elements])
+                except KeyError:
+                    raise InvalidValueInSpecification(spec, 'coordinates', coords_keys)
         if spec_type == 'from file':
             file_name = spec.get_or_fail('file')
             return np.loadtxt(file_name, delimiter=',')
@@ -88,6 +106,14 @@ class StatesFactory(object):
             priors = PriorsFactory.create(priors_spec, elements)
             metric = MetricFactory.create(metric_spec, elements)
             return StateMetricSpace(elements, priors, metric)
+        if spec_type == 'wcs munsell palette':
+            elements_spec = spec.get_or_fail('elements')
+            priors_spec = spec.get('priors') or Specification.empty()
+            metric_spec = spec.get('metric') or Specification.empty()
+            elements = ElementsFactory.create(elements_spec)
+            priors = PriorsFactory.create(priors_spec, elements)
+            metric = MetricFactory.create(metric_spec, elements)
+            return WCSMunsellPalette(elements, priors, metric)
         else:
             raise InvalidValueInSpecification(spec, 'type', spec_type)
 

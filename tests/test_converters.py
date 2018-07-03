@@ -8,11 +8,11 @@ from democritus.converters import DynamicsFactory, ElementsFactory, BivariateFun
     ActionSetFactory
 from democritus.dynamics import ReplicatorDynamics, BestResponseDynamics, QuantalResponseDynamics
 from democritus.exceptions import InvalidValueInSpecification, MissingFieldInSpecification, \
-    IncompatibilityInSpecification
+    IncompatibilityInSpecification, SpecificationError
 from democritus.games import SimMaxGame, Game
 from democritus.metrics import ExpectedUtilityMetric
 from democritus.specification import Specification
-from democritus.types import StateSet, StateMetricSpace, ElementSet, MessageSet, ActionSet
+from democritus.types import StateSet, StateMetricSpace, ElementSet, MessageSet, ActionSet, WCSMunsellPalette
 
 
 class TestElementsFactory(object):
@@ -69,6 +69,37 @@ class TestElementsFactory(object):
     def test_unknown_type_raises_exception(self):
         elements_spec = Specification.from_dict({'type': '????????'})
         with pytest.raises(InvalidValueInSpecification):
+            ElementsFactory.create(elements_spec)
+
+    def test_from_file(self, tmpdir):
+        priors_file_content = '''
+x,y,z
+0.15,0.6,0.7
+0.5,0.0,0.9
+0.35,0.36,50
+        '''
+        elements_file = tmpdir.join("test_elements.csv")
+        elements_file.write(priors_file_content)
+        elements_spec = Specification.from_dict({'type': 'from file', 'file': str(elements_file)})
+        elements = ElementsFactory.create(elements_spec)
+        assert len(elements) == 3
+        assert elements[0] == {'x': 0.15, 'y': 0.6, 'z': 0.7}
+        assert elements[1] == {'x': 0.5, 'y': 0.0, 'z': 0.9}
+        assert elements[2] == {'x': 0.35, 'y': 0.36, 'z': 50}
+
+    def test_from_file_with_bad_content_raises_exception(self, tmpdir):
+        priors_file_content = '''
+lorem ipsum
+        '''
+        elements_file = tmpdir.join("test_elements.csv")
+        elements_file.write(priors_file_content)
+        elements_spec = Specification.from_dict({'type': 'from file', 'file': str(elements_file)})
+        with pytest.raises(SpecificationError):
+            ElementsFactory.create(elements_spec)
+
+    def test_from_file_with_missing_file_raises_exception(self):
+        elements_spec = Specification.from_dict({'type': 'from file', 'file': 'non-existent-file.csv'})
+        with pytest.raises(FileNotFoundError):
             ElementsFactory.create(elements_spec)
 
 
@@ -138,6 +169,22 @@ class TestPriorsFactory(object):
 
 
 class TestMetricFactory(object):
+    def test_create_equidistant(self):
+        metric_spec = Specification.from_dict({'type': 'equidistant'})
+
+        metric_1 = MetricFactory.create(metric_spec, [1])
+        assert metric_1[0].tolist() == [0]
+
+        metric_3 = MetricFactory.create(metric_spec, [1, 2, 3])
+        assert metric_3[0].tolist() == [0, 1, 1]
+        assert metric_3[1].tolist() == [1, 0, 1]
+        assert metric_3[2].tolist() == [1, 1, 0]
+
+        other_metric_3 = MetricFactory.create(metric_spec, [1, 2, 5])
+        assert other_metric_3[0].tolist() == [0, 1, 1]
+        assert other_metric_3[1].tolist() == [1, 0, 1]
+        assert other_metric_3[2].tolist() == [1, 1, 0]
+
     def test_create_euclidean(self):
         metric_spec = Specification.from_dict({'type': 'euclidean'})
 
@@ -154,6 +201,48 @@ class TestMetricFactory(object):
         assert other_metric_3[1].tolist() == [1, 0, 3]
         assert other_metric_3[2].tolist() == [4, 3, 0]
 
+    def test_create_euclidean_with_one_coordinate(self):
+        elements_1 = [{'a': 1}, {'a': 2}, {'a': 5}]
+
+        metric_spec = Specification.from_dict({'type': 'euclidean',
+                                               'coordinates': ['a']})
+
+        metric_1 = MetricFactory.create(metric_spec, elements_1)
+        assert metric_1[0].tolist() == [0, 1, 4]
+        assert metric_1[1].tolist() == [1, 0, 3]
+        assert metric_1[2].tolist() == [4, 3, 0]
+
+        elements_2 = [{'a': 1, 'b': 1},
+                      {'a': 2, 'b': 2},
+                      {'a': 5, 'b': 5}]
+
+        metric_2 = MetricFactory.create(metric_spec, elements_2)
+        assert metric_2[0].tolist() == [0, 1, 4]
+        assert metric_2[1].tolist() == [1, 0, 3]
+        assert metric_2[2].tolist() == [4, 3, 0]
+
+    def test_create_euclidean_with_two_coordinates(self):
+        elements = [{'a': 1, 'b': 1},
+                    {'a': 2, 'b': 2},
+                    {'a': 5, 'b': 5}]
+
+        metric_spec = Specification.from_dict({'type': 'euclidean',
+                                               'coordinates': ['a', 'b']})
+
+        other_metric_3 = MetricFactory.create(metric_spec, elements)
+        assert np.round(other_metric_3[0], decimals=3).tolist() == [0, 1.414, 5.657]
+        assert np.round(other_metric_3[1], decimals=3).tolist() == [1.414, 0, 4.243]
+        assert np.round(other_metric_3[2], decimals=3).tolist() == [5.657, 4.243, 0]
+
+    def test_create_euclidean_with_missing_coordinate_throws_exception(self):
+        elements_1 = [{'a': 1}, {'a': 2}, {'a': 5}]
+
+        metric_spec = Specification.from_dict({'type': 'euclidean',
+                                               'coordinates': ['???????']})
+
+        with pytest.raises(InvalidValueInSpecification):
+            MetricFactory.create(metric_spec, elements_1)
+
     def test_create_from_file(self, tmpdir):
         metric_file_content = '''
             0.0,  0.4,  0.6
@@ -168,12 +257,12 @@ class TestMetricFactory(object):
         assert metric[1].tolist() == [0.15, 0.05, 0.8]
         assert metric[2].tolist() == [0.3, 0.3, 0.4]
 
-    def test_missing_type_defaults_to_euclidean(self):
+    def test_missing_type_defaults_to_equidistant(self):
         metric_spec = Specification.empty()
         metric_3 = MetricFactory.create(metric_spec, [1, 2, 3])
-        assert metric_3[0].tolist() == [0, 1, 2]
+        assert metric_3[0].tolist() == [0, 1, 1]
         assert metric_3[1].tolist() == [1, 0, 1]
-        assert metric_3[2].tolist() == [2, 1, 0]
+        assert metric_3[2].tolist() == [1, 1, 0]
 
     def test_unknown_type_raises_exception(self):
         metric_spec = Specification.from_dict({'type': '????????'})
@@ -203,6 +292,33 @@ class TestStatesFactory(object):
         assert states.distances[0].tolist() == [0, 1, 2]
         assert states.distances[1].tolist() == [1, 0, 1]
         assert states.distances[2].tolist() == [2, 1, 0]
+
+    def test_wcs_munsell_palette(self, tmpdir):
+        priors_file_content = '''
+x,y,z
+0.15,0.6,0.7
+0.5,0.0,0.9
+0.35,0.36,50
+                '''
+        elements_file = tmpdir.join("test_elements.csv")
+        elements_file.write(priors_file_content)
+        states_spec = Specification.from_dict({'type': 'wcs munsell palette',
+                                               'elements': {
+                                                   'type': 'from file',
+                                                   'file': str(elements_file)},
+                                               'metric': {
+                                                   'type': 'equidistant'
+                                               }})
+        states = StatesFactory.create(states_spec)
+        assert type(states) is WCSMunsellPalette
+        assert len(states.elements) == 3
+        assert states.elements[0] == {'x': 0.15, 'y': 0.6, 'z': 0.7}
+        assert states.elements[1] == {'x': 0.5, 'y': 0.0, 'z': 0.9}
+        assert states.elements[2] == {'x': 0.35, 'y': 0.36, 'z': 50}
+        assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
+        assert states.distances[0].tolist() == [0, 1, 1]
+        assert states.distances[1].tolist() == [1, 0, 1]
+        assert states.distances[2].tolist() == [1, 1, 0]
 
     def test_missing_type_defaults_to_set(self):
         states_spec = Specification.from_dict({'elements': {'type': 'numbered labels', 'size': 3},
@@ -238,7 +354,7 @@ class TestStatesFactory(object):
         assert states.distances[1].tolist() == [1, 0, 1]
         assert states.distances[2].tolist() == [2, 1, 0]
 
-    def test_metric_space_missing_metric_defaults_to_euclidean(self):
+    def test_metric_space_missing_metric_defaults_to_equidistant(self):
         states_spec = Specification.from_dict({'type': 'metric space',
                                                'elements': {'type': 'numeric range', 'size': 3},
                                                'priors': {'type': 'uniform'}})
@@ -246,9 +362,9 @@ class TestStatesFactory(object):
         assert type(states) is StateMetricSpace
         assert states.elements == [1, 2, 3]
         assert states.priors.tolist() == [1 / 3, 1 / 3, 1 / 3]
-        assert states.distances[0].tolist() == [0, 1, 2]
+        assert states.distances[0].tolist() == [0, 1, 1]
         assert states.distances[1].tolist() == [1, 0, 1]
-        assert states.distances[2].tolist() == [2, 1, 0]
+        assert states.distances[2].tolist() == [1, 1, 0]
 
     def test_metric_space_missing_elements_raises_exception(self):
         states_spec = Specification.from_dict({'type': 'metric space',
