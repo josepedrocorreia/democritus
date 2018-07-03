@@ -99,7 +99,7 @@ lorem ipsum
 
     def test_from_file_with_missing_file_raises_exception(self):
         elements_spec = Specification.from_dict({'type': 'from file', 'file': 'non-existent-file.csv'})
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(IOError):
             ElementsFactory.create(elements_spec)
 
 
